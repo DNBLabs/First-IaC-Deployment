@@ -10,3 +10,8 @@ output "deployment_name_prefix" {
   description = "Naming prefix from project_name and environment_name; used when resources are added in later tasks."
   value       = local.deployment_name_prefix
 }
+
+output "azure_region" {
+  description = "Primary Azure region input; the provider will target this in tasks that add regional resources."
+  value       = var.azure_region
+}
