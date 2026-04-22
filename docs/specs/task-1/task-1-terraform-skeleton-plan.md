@@ -68,15 +68,15 @@ Update Task 1 completion note in parent plan
 **Estimated scope:** XS
 
 ## Task 1.3: Add baseline non-secret variable scaffold
-**Description:** Add minimal variable declarations required for future tasks without introducing validations/resources from Task 2+.
+**Description:** Add minimal variable declarations required for future tasks without introducing validations/resources from Task 3+.
 
 **Acceptance criteria:**
 - [x] `variables.tf` contains baseline, non-secret placeholders only. - Added `project_name`, `environment_name`, and `azure_region` only.
-- [x] No CIDR validation logic from Task 2 is introduced. - Deferred CIDR validation to Task 2 as planned.
+- [x] No CIDR validation logic from Task 3 is introduced. - Deferred CIDR validation to Task 3 as planned.
 - [x] Variable descriptions are clear and beginner-friendly. - Added explicit descriptions for each baseline variable.
 
 **Verification:**
-- [x] Manual check: no secrets and no Task 2 validation logic. - Confirmed non-secret defaults only and no CIDR validation logic.
+- [x] Manual check: no secrets and no Task 3 validation logic. - Confirmed non-secret defaults only and no CIDR validation logic.
 
 **Dependencies:** Task 1.2
 

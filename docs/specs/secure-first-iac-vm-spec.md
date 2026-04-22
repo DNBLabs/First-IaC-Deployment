@@ -76,12 +76,12 @@ variable "allowed_ssh_cidr" {
 ```
 
 ## Testing Strategy
-- **Static checks (every PR):**
+- **Static checks (default: every push touching Terraform paths; optionally also on pull requests):**
   - `terraform fmt -check -recursive`
   - `terraform validate`
   - `tflint`
   - security scan (`checkov`)
-- **Plan verification (every PR):**
+- **Plan verification (same CI workflow once plan job exists):**
   - Run `terraform plan` and store artifact/log for review.
 - **Apply verification (protected workflow):**
   - Manual approval required before `terraform apply`.
@@ -109,7 +109,7 @@ variable "allowed_ssh_cidr" {
 ## Success Criteria
 1. Terraform deploys a Linux VM (`Standard_B1s` target) in Azure with managed disk and required network resources.
 2. Auto-shutdown is configured for 19:00 daily and verifiable in Azure.
-3. PR workflow blocks merges when format, validation, lint, or security checks fail.
+3. CI static checks fail when format, validation, lint, or security checks fail (typically on push; add pull-request triggers if you standardize on PRs).
 4. Apply workflow requires explicit human approval and succeeds using secure cloud auth.
 5. Documentation exists for setup, deploy, verify, and teardown steps.
 

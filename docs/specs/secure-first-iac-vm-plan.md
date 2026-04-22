@@ -1,7 +1,7 @@
 # Implementation Plan: Secure-First IaC VM Deployment
 
 ## Overview
-This plan breaks implementation into small, verifiable slices that keep the repository working after each task. The sequence prioritizes secure Terraform foundations, then cost controls, then CI/CD guardrails, and finally operational documentation.
+This plan breaks implementation into small, verifiable slices that keep the repository working after each task. The sequence prioritizes secure Terraform foundations, then cost controls, then CI/CD guardrails, and finally operational documentation. **Task 2** adds CI static checks (`fmt`, `validate`, `tflint`, `checkov`) on **`push`** to Terraform-related paths (solo-maintainer friendly); you can still add **`pull_request`** triggers later if you start using PRs regularly.
 
 ## Architecture Decisions
 - Use a single Terraform root in `infra/` for the first deployment to keep complexity low.
@@ -13,11 +13,13 @@ This plan breaks implementation into small, verifiable slices that keep the repo
 ## Dependency Graph
 Terraform layout and provider setup
     ->
+CI static checks on push (fmt / validate / tflint / checkov)
+    ->
 Core network and VM resources
     ->
 Shutdown + budget protections
     ->
-PR CI checks (fmt/validate/lint/security/plan)
+PR plan artifact job
     ->
 Main apply workflow (approval + OIDC)
     ->
@@ -50,7 +52,28 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** S (1-2 files effectively authored at a time)
 
-## Task 2: Add secure input model
+## Task 2: Add CI workflow for static quality checks
+**Description:** Create a GitHub Actions workflow that runs formatting, validate, lint, and security scanning. Prefer **`on: push`** with path filters so checks run when you push changes without opening a pull request (single maintainer). Optionally add **`pull_request`** as well if you want the same jobs when using PRs.
+
+**Acceptance criteria:**
+- [ ] Workflow runs `fmt`, `validate`, `tflint`, and `checkov`.
+- [ ] Workflow fails fast on security or validation errors.
+- [ ] Workflow is scoped to Terraform-related paths.
+- [ ] Workflow triggers on **`push`** (not pull-request only).
+
+**Verification:**
+- [ ] Push a commit that touches `infra/` and confirm the workflow runs
+- [ ] Confirm all jobs appear and fail on intentional bad formatting
+
+**Dependencies:** Task 1
+
+**Files likely touched:**
+- `.github/workflows/terraform-ci.yml`
+- `infra/.tflint.hcl`
+
+**Estimated scope:** S (2 files)
+
+## Task 3: Add secure input model
 **Description:** Define variables and validation for region fallback, SSH CIDR format, naming, and tags to enforce secure and predictable configuration from the boundary.
 
 **Acceptance criteria:**
@@ -70,7 +93,7 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** S (1-2 files)
 
-## Task 3: Create core network resources
+## Task 4: Create core network resources
 **Description:** Add resource group, VNet, subnet, NSG, and NIC with a restrictive SSH rule tied to `allowed_ssh_cidr`.
 
 **Acceptance criteria:**
@@ -82,7 +105,7 @@ Runbooks and end-to-end verification
 - [ ] Run: `terraform -chdir=infra plan`
 - [ ] Manual check: plan output shows single-source SSH rule only.
 
-**Dependencies:** Task 2
+**Dependencies:** Task 3
 
 **Files likely touched:**
 - `infra/main.tf`
@@ -90,7 +113,7 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** M (3-5 files)
 
-### Checkpoint: Foundation (After Tasks 1-3)
+### Checkpoint: Foundation (After Tasks 1-4)
 - [ ] `terraform -chdir=infra fmt -check -recursive` passes
 - [ ] `terraform -chdir=infra validate` passes
 - [ ] Plan shows no public-open SSH exposure
@@ -98,7 +121,7 @@ Runbooks and end-to-end verification
 
 ### Phase 2: Core Infrastructure Safety
 
-## Task 4: Add Linux VM baseline
+## Task 5: Add Linux VM baseline
 **Description:** Provision a low-cost Linux VM (`Standard_B1s`) with SSH key authentication only and managed disk defaults.
 
 **Acceptance criteria:**
@@ -110,7 +133,7 @@ Runbooks and end-to-end verification
 - [ ] Run: `terraform -chdir=infra plan`
 - [ ] Manual check: VM auth section shows no password-based login.
 
-**Dependencies:** Task 3
+**Dependencies:** Task 4
 
 **Files likely touched:**
 - `infra/main.tf`
@@ -118,7 +141,7 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** S (1-2 files)
 
-## Task 5: Add daily auto-shutdown at 19:00
+## Task 6: Add daily auto-shutdown at 19:00
 **Description:** Configure Azure VM auto-shutdown policy/schedule so the VM powers down daily to reduce cost risk.
 
 **Acceptance criteria:**
@@ -129,7 +152,7 @@ Runbooks and end-to-end verification
 - [ ] Run: `terraform -chdir=infra plan`
 - [ ] Manual check: plan includes auto-shutdown configuration.
 
-**Dependencies:** Task 4
+**Dependencies:** Task 5
 
 **Files likely touched:**
 - `infra/cost_controls.tf`
@@ -137,7 +160,7 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** S (1-2 files)
 
-## Task 6: Add budget alert configuration
+## Task 7: Add budget alert configuration
 **Description:** Add Azure budget resources with threshold alerts and notification targets for early spend visibility.
 
 **Acceptance criteria:**
@@ -149,7 +172,7 @@ Runbooks and end-to-end verification
 - [ ] Run: `terraform -chdir=infra plan`
 - [ ] Manual check: plan includes budget and alert threshold.
 
-**Dependencies:** Task 2
+**Dependencies:** Task 3
 
 **Files likely touched:**
 - `infra/cost_controls.tf`
@@ -157,46 +180,27 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** S (1-2 files)
 
-### Checkpoint: Core Infrastructure Safety (After Tasks 4-6)
+### Checkpoint: Core Infrastructure Safety (After Tasks 5-7)
 - [ ] `terraform -chdir=infra validate` passes
 - [ ] Plan includes VM + shutdown + budget resources
 - [ ] No scanner-critical anti-patterns are visible before CI integration
 
 ### Phase 3: CI/CD and Security Gates
 
-## Task 7: Add PR workflow for quality checks
-**Description:** Create a GitHub Actions workflow that runs formatting, validate, lint, and security scanning on pull requests.
-
-**Acceptance criteria:**
-- [ ] PR workflow runs `fmt`, `validate`, `tflint`, and `checkov`.
-- [ ] Workflow fails fast on security or validation errors.
-- [ ] Workflow is scoped to Terraform-related paths.
-
-**Verification:**
-- [ ] Trigger PR workflow from a test branch
-- [ ] Confirm all jobs appear and fail on intentional bad formatting
-
-**Dependencies:** Tasks 1-6
-
-**Files likely touched:**
-- `.github/workflows/terraform-pr.yml`
-
-**Estimated scope:** S (1 file)
-
-## Task 8: Add PR plan artifact job
-**Description:** Extend PR workflow to generate and upload a Terraform plan artifact for reviewer visibility.
+## Task 8: Add plan artifact job to CI workflow
+**Description:** Extend the Task 2 CI workflow to generate and upload a Terraform plan artifact for visibility before apply.
 
 **Acceptance criteria:**
 - [ ] Plan job runs after checks pass.
 - [ ] Plan output is uploaded as an artifact.
 
 **Verification:**
-- [ ] Open PR and confirm artifact is downloadable
+- [ ] Push (or open a PR) that touches `infra/` and confirm the artifact is downloadable from the workflow run
 
-**Dependencies:** Task 7
+**Dependencies:** Tasks 2 and 7 (static checks from Task 2 plus full Terraform module through Task 7 so `terraform plan` is meaningful)
 
 **Files likely touched:**
-- `.github/workflows/terraform-pr.yml`
+- `.github/workflows/terraform-ci.yml`
 
 **Estimated scope:** XS (1 file)
 
@@ -212,7 +216,7 @@ Runbooks and end-to-end verification
 - [ ] Merge test PR to `main` and confirm approval gate halts apply
 - [ ] Approve and verify apply step starts successfully
 
-**Dependencies:** Tasks 7-8 and OIDC identity setup
+**Dependencies:** Task 8 and OIDC identity setup
 
 **Files likely touched:**
 - `.github/workflows/terraform-apply.yml`
@@ -220,9 +224,9 @@ Runbooks and end-to-end verification
 
 **Estimated scope:** S (1-2 files)
 
-### Checkpoint: CI/CD Gates (After Tasks 7-9)
-- [ ] PR checks fail on broken infra code
-- [ ] PR checks pass on valid infra code
+### Checkpoint: CI/CD Gates (After Tasks 8-9)
+- [ ] CI static checks fail on broken infra code
+- [ ] CI static checks pass on valid infra code
 - [ ] Main apply workflow is gated and authenticated via OIDC
 
 ### Phase 4: Documentation and Operational Readiness
