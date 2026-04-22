@@ -214,3 +214,10 @@ Contract script `scripts/verify-task2-static.ps1` replays the same **Terraform**
 - [x] **RED:** Copied `infra` \*.tf to a temp directory, appended mis-indented HCL to `main.tf`, ran `verify-task2-static.ps1 -InfraDirectory <temp>` — script exited **non-zero**; `terraform fmt -check` reported `main.tf` (exit code 3).
 - [x] **GREEN:** Ran `pwsh -NoProfile -File scripts/verify-task2-static.ps1` against real `infra/` — exit **0** (Terraform core passed; tflint skipped if absent; checkov runs when on PATH).
 - [x] Scope: no Task 3 Terraform edits; temp RED directory under `%TEMP%` only.
+
+## Security hardening evidence (Task 2)
+
+- [x] **Workflow least privilege:** `permissions: contents: read` only; no repository secrets or cloud credentials in YAML; comments document fork PR token expectations.
+- [x] **Supply chain / CI stability:** TFLint installer pinned to **`v0.62.0`** (setup-tflint `tflint_version`) instead of floating `latest`; workflow-level **concurrency** limits overlapping runs.
+- [x] **Local script boundary:** `Assert-InfraUnderRepositoryRoot` rejects Terraform roots outside the resolved repository (path prefix attack / mistaken paths); verified refusal for `-InfraDirectory $env:SystemRoot`.
+- [x] **No secret echo:** removed no-op `GITHUB_TOKEN` self-assignment in the script; default `GITHUB_TOKEN` still available to `tflint --init` in CI only via Actions.

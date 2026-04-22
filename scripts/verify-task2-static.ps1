@@ -49,6 +49,33 @@ function Resolve-RepositoryRoot {
     return (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 }
 
+function Assert-InfraUnderRepositoryRoot {
+    <#
+    .SYNOPSIS
+      Ensures the Terraform root resolves to a canonical path inside the repository (path-traversal safe).
+    .PARAMETER RepoRoot
+      Absolute repository root path.
+    .PARAMETER InfraPath
+      Absolute Terraform directory path (must equal repo root or be a subdirectory).
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [Parameter(Mandatory = $true)][string]$InfraPath
+    )
+
+    $repoCanonical = [System.IO.Path]::GetFullPath($RepoRoot).TrimEnd('\', '/')
+    $infraCanonical = [System.IO.Path]::GetFullPath($InfraPath)
+
+    if ([string]::Equals($infraCanonical, $repoCanonical, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return
+    }
+
+    $boundary = $repoCanonical + [System.IO.Path]::DirectorySeparatorChar
+    if (-not $infraCanonical.StartsWith($boundary, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Terraform path must be empty, relative to the repository root, or an absolute path inside the repository. Refused: '$InfraPath'"
+    }
+}
+
 function Resolve-InfraPath {
     <#
     .SYNOPSIS
@@ -123,7 +150,6 @@ function Invoke-Task2TflintIfAvailable {
 
     Push-Location $InfraPath
     try {
-        $env:GITHUB_TOKEN = $env:GITHUB_TOKEN
         Write-Host "==> tflint --init"
         tflint --init
         if ($LASTEXITCODE -ne 0) {
@@ -160,12 +186,19 @@ function Invoke-Task2CheckovIfAvailable {
         return
     }
 
+    Assert-InfraUnderRepositoryRoot -RepoRoot $RepoRoot -InfraPath $InfraPath
+
     $repoNorm = [System.IO.Path]::GetFullPath($RepoRoot).TrimEnd('\', '/')
     $infraNorm = [System.IO.Path]::GetFullPath($InfraPath)
-    if (-not $infraNorm.StartsWith($repoNorm, [StringComparison]::OrdinalIgnoreCase)) {
-        throw "Infra path must be under repository root for checkov -d relative path."
+
+    $relativeDir = ""
+    if ([string]::Equals($infraNorm, $repoNorm, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $relativeDir = "."
     }
-    $relativeDir = $infraNorm.Substring($repoNorm.Length).TrimStart('\', '/')
+    else {
+        $boundaryLength = ($repoNorm + [System.IO.Path]::DirectorySeparatorChar).Length
+        $relativeDir = $infraNorm.Substring($boundaryLength).TrimStart('\', '/')
+    }
     if ([string]::IsNullOrWhiteSpace($relativeDir)) {
         $relativeDir = "."
     }
@@ -184,6 +217,8 @@ function Invoke-Task2CheckovIfAvailable {
 
 $repoRoot = Resolve-RepositoryRoot -RepositoryRoot $RepositoryRoot
 $infraPath = Resolve-InfraPath -RepoRoot $repoRoot -InfraDirectory $InfraDirectory
+
+Assert-InfraUnderRepositoryRoot -RepoRoot $repoRoot -InfraPath $infraPath
 
 Write-Host "Repository root: $repoRoot"
 Write-Host "Terraform root:  $infraPath"

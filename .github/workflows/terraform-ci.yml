@@ -9,6 +9,14 @@
 
 name: Terraform CI
 
+# Security (Task 2): no repo secrets referenced; minimal permissions below.
+# Fork PRs receive read-only token appropriate for checkout + static scans only.
+# Pinning third-party Actions to immutable SHAs is recommended for supply-chain rigor.
+
+concurrency:
+  group: terraform-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -51,7 +59,8 @@ jobs:
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
         with:
-          tflint_version: latest
+          # Pinned release (supply chain / reproducibility) — https://github.com/terraform-linters/tflint/releases
+          tflint_version: v0.62.0
 
       - name: Init TFLint plugins
         run: tflint --init
