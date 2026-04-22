@@ -44,6 +44,10 @@ Local parity checks (developer and pre-push):
 
 `checkov -d infra --framework terraform`
 
+Local contract test (Task 2 CI parity, same order as the GitHub job for Terraform core steps):
+
+`pwsh -NoProfile -File scripts/verify-task2-static.ps1`
+
 CI should run the same logical steps (paths and flags may be adjusted to match `working-directory: infra`).
 
 ## Project Structure
@@ -52,6 +56,7 @@ Task 2 introduces or updates:
 
 - `.github/workflows/terraform-ci.yml` — workflow definition (`push` and `pull_request` + path filters; jobs for fmt, validate, tflint, checkov).
 - `infra/.tflint.hcl` — TFLint plugin and rule configuration for the `infra` root.
+- `scripts/verify-task2-static.ps1` — optional local parity runner for Terraform fmt/init/validate (and optional tflint/checkov when installed).
 
 Task 2 does **not** introduce:
 

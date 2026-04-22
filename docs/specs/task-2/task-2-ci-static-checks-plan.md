@@ -206,3 +206,11 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 ## Open questions
 
 - None required to start; optional: pin exact versions of `setup-terraform`, TFLint installer, and `checkov-action` to SHAs for supply-chain rigor.
+
+## TDD evidence (Task 2 — executable checks)
+
+Contract script `scripts/verify-task2-static.ps1` replays the same **Terraform** gates as CI (`fmt -check`, `init -backend=false`, `validate`), then optionally **tflint** / **checkov** if those binaries exist.
+
+- [x] **RED:** Copied `infra` \*.tf to a temp directory, appended mis-indented HCL to `main.tf`, ran `verify-task2-static.ps1 -InfraDirectory <temp>` — script exited **non-zero**; `terraform fmt -check` reported `main.tf` (exit code 3).
+- [x] **GREEN:** Ran `pwsh -NoProfile -File scripts/verify-task2-static.ps1` against real `infra/` — exit **0** (Terraform core passed; tflint skipped if absent; checkov runs when on PATH).
+- [x] Scope: no Task 3 Terraform edits; temp RED directory under `%TEMP%` only.
