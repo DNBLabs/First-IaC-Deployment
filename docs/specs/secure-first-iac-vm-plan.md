@@ -1,7 +1,7 @@
 # Implementation Plan: Secure-First IaC VM Deployment
 
 ## Overview
-This plan breaks implementation into small, verifiable slices that keep the repository working after each task. The sequence prioritizes secure Terraform foundations, then cost controls, then CI/CD guardrails, and finally operational documentation. **Task 2** adds CI static checks (`fmt`, `validate`, `tflint`, `checkov`) on **`push`** to Terraform-related paths (solo-maintainer friendly); you can still add **`pull_request`** triggers later if you start using PRs regularly.
+This plan breaks implementation into small, verifiable slices that keep the repository working after each task. The sequence prioritizes secure Terraform foundations, then cost controls, then CI/CD guardrails, and finally operational documentation. **Task 2** adds CI static checks (`fmt`, `validate`, `tflint`, `checkov`) on **`push`** and **`pull_request`** to Terraform-related paths, with Checkov via the **`bridgecrewio/checkov-action`** GitHub Action.
 
 ## Architecture Decisions
 - Use a single Terraform root in `infra/` for the first deployment to keep complexity low.
@@ -13,7 +13,7 @@ This plan breaks implementation into small, verifiable slices that keep the repo
 ## Dependency Graph
 Terraform layout and provider setup
     ->
-CI static checks on push (fmt / validate / tflint / checkov)
+CI static checks on push and pull_request (fmt / validate / tflint / checkov)
     ->
 Core network and VM resources
     ->
@@ -53,17 +53,18 @@ Runbooks and end-to-end verification
 **Estimated scope:** S (1-2 files effectively authored at a time)
 
 ## Task 2: Add CI workflow for static quality checks
-**Description:** Create a GitHub Actions workflow that runs formatting, validate, lint, and security scanning. Prefer **`on: push`** with path filters so checks run when you push changes without opening a pull request (single maintainer). Optionally add **`pull_request`** as well if you want the same jobs when using PRs.
+**Description:** Create a GitHub Actions workflow that runs formatting, validate, lint, and security scanning. Use **`on: push`** and **`on: pull_request`** with the same path filters. Run Checkov using the **`bridgecrewio/checkov-action`** GitHub Action (not ad-hoc `pip install` on the runner).
 
 **Acceptance criteria:**
-- [ ] Workflow runs `fmt`, `validate`, `tflint`, and `checkov`.
-- [ ] Workflow fails fast on security or validation errors.
-- [ ] Workflow is scoped to Terraform-related paths.
-- [ ] Workflow triggers on **`push`** (not pull-request only).
+- [x] Workflow runs `fmt`, `validate`, `tflint`, and Checkov via **`bridgecrewio/checkov-action`**. - Added `.github/workflows/terraform-ci.yml` (single job: setup-terraform, fmt, init, validate, setup-tflint, tflint, checkov action).
+- [x] Workflow fails fast on security or validation errors. - No `continue-on-error` on required steps; Checkov without `soft_fail`.
+- [x] Workflow is scoped to Terraform-related paths. - `on.push` and `on.pull_request` use `paths` for `infra/**` and the workflow file.
+- [x] Workflow triggers on **`push`** and **`pull_request`**. - Both events configured with identical `paths`.
 
 **Verification:**
-- [ ] Push a commit that touches `infra/` and confirm the workflow runs
-- [ ] Confirm all jobs appear and fail on intentional bad formatting
+- [ ] Push a commit that touches `infra/` and confirm the workflow runs. - **Pending:** run after this commit is on GitHub (local `terraform fmt` / `init` / `validate` already pass).
+- [ ] Open or update a PR that touches `infra/` and confirm the same workflow runs. - **Pending:** same as above.
+- [ ] Confirm all jobs appear and fail on intentional bad formatting. - **Optional RED:** mis-format a file in a throwaway branch, expect `Terraform Format` step to fail, then revert.
 
 **Dependencies:** Task 1
 
