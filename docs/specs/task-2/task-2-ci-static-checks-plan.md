@@ -34,14 +34,14 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 **Acceptance criteria:**
 
-- [ ] `infra/.tflint.hcl` exists and declares the Terraform/Azure ruleset plugin(s) needed for `azurerm`.
-- [ ] Local command `tflint --chdir=infra --init` succeeds (after TFLint is installed locally, if not already).
+- [x] `infra/.tflint.hcl` exists and declares the Terraform/Azure ruleset plugin(s) needed for `azurerm`. - Plugin `azurerm` sourced from official ruleset README pattern.
+- [ ] Local command `tflint --chdir=infra --init` succeeds (after TFLint is installed locally, if not already). - **Deferred:** TFLint CLI not installed on this Windows host; **`terraform-linters/setup-tflint@v4`** in CI establishes parity.
 
 **Verification:**
 
-- [ ] Run: `tflint --chdir=infra --init`
-- [ ] Run: `tflint --chdir=infra`
-- [ ] Manual check: file contains no secrets.
+- [ ] Run: `tflint --chdir=infra --init` - Deferred (no local `tflint` binary); validated via CI workflow step instead.
+- [ ] Run: `tflint --chdir=infra` - Deferred; CI runs `tflint --format compact`.
+- [x] Manual check: file contains no secrets. - `.tflint.hcl` holds version/source only.
 
 **Dependencies:** Task 1 complete
 
@@ -59,14 +59,14 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 **Acceptance criteria:**
 
-- [ ] Workflow triggers on **`push`** and **`pull_request`** with the same `paths` (at minimum `infra/**` and the workflow file itself).
-- [ ] No Azure credentials or repository secrets referenced.
-- [ ] Default branch pushes and PRs from forks follow your intended policy (document if `pull_request` from forks is restricted or accepted).
+- [x] Workflow triggers on **`push`** and **`pull_request`** with the same `paths` (at minimum `infra/**` and the workflow file itself). - Implemented in `terraform-ci.yml`.
+- [x] No Azure credentials or repository secrets referenced. - Only `permissions: contents: read` and default `GITHUB_TOKEN` for plugin downloads.
+- [x] Default branch pushes and PRs from forks follow your intended policy (document if `pull_request` from forks is restricted or accepted). - **FYI:** standard `pull_request` runs with fork-safe read permissions; no extra secrets added (document as acceptable for static checks).
 
 **Verification:**
 
-- [ ] Manual review: YAML parses; triggers and paths match the spec example.
-- [ ] After push to GitHub: workflow appears in Actions (may be no-op until jobs are added in 2.3–2.5, or placeholder job runs).
+- [x] Manual review: YAML parses; triggers and paths match the spec example. - Reviewed `terraform-ci.yml`.
+- [ ] After push to GitHub: workflow appears in Actions (may be no-op until jobs are added in 2.3–2.5, or placeholder job runs). - **Pending:** push local `main` to `origin` and confirm **Terraform CI** appears.
 
 **Dependencies:** Task 2.1 (can be parallel with 2.1 if you prefer two small PRs; sequential is simpler for first-time setup)
 
@@ -84,14 +84,14 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 **Acceptance criteria:**
 
-- [ ] Format check fails the workflow when `infra/` is not formatted.
-- [ ] `validate` runs only after successful `init`.
-- [ ] No backend configuration or cloud credentials required for `init`.
+- [x] Format check fails the workflow when `infra/` is not formatted. - Step `terraform fmt -check -recursive` fails non-zero when drift exists (verified by design; optional RED on GitHub).
+- [x] `validate` runs only after successful `init`. - Steps ordered: Init then Validate in same job.
+- [x] No backend configuration or cloud credentials required for `init`. - Uses `terraform init -backend=false -input=false`.
 
 **Verification:**
 
-- [ ] Local parity: `terraform -chdir=infra fmt -check -recursive` and `terraform -chdir=infra init -backend=false && terraform -chdir=infra validate`
-- [ ] CI: intentional mis-format commit fails; fix commit passes.
+- [x] Local parity: `terraform -chdir=infra fmt -check -recursive` and `terraform -chdir=infra init -backend=false && terraform -chdir=infra validate` - Ran successfully in workspace.
+- [ ] CI: intentional mis-format commit fails; fix commit passes. - **Pending:** run RED branch on GitHub after push.
 
 **Dependencies:** Task 2.2
 
@@ -109,12 +109,12 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 **Acceptance criteria:**
 
-- [ ] TFLint job fails the workflow on lint violations.
-- [ ] TFLint uses the same config as local (`infra/.tflint.hcl`).
+- [x] TFLint job fails the workflow on lint violations. - `tflint --format compact` exit code propagates (no `continue-on-error`).
+- [x] TFLint uses the same config as local (`infra/.tflint.hcl`). - Job uses `defaults.run.working-directory: infra` so `.tflint.hcl` is picked up.
 
 **Verification:**
 
-- [ ] CI run shows TFLint job green on clean `infra/`.
+- [ ] CI run shows TFLint job green on clean `infra/`. - **Pending:** confirm on GitHub Actions after push.
 - [ ] Optional RED: introduce a trivial rule violation in a throwaway branch to confirm failure, then revert.
 
 **Dependencies:** Tasks 2.1 and 2.2 (2.3 optional ordering: fmt/validate can run in same job or separate jobs; keep under five files per sub-task)
@@ -133,13 +133,13 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 **Acceptance criteria:**
 
-- [ ] Checkov runs via **`bridgecrewio/checkov-action`**, not `pip install checkov`.
-- [ ] Scan scope is `infra/` (not entire repo unless intentionally justified).
-- [ ] Action version pinned per team policy (SHA preferred, or tagged version with comment).
+- [x] Checkov runs via **`bridgecrewio/checkov-action`**, not `pip install checkov`. - Uses `bridgecrewio/checkov-action@v12`.
+- [x] Scan scope is `infra/` (not entire repo unless intentionally justified). - `with.directory: infra`.
+- [x] Action version pinned per team policy (SHA preferred, or tagged version with comment). - Pinned to **`v12`** tag per checkov-action README examples.
 
 **Verification:**
 
-- [ ] CI run shows Checkov step/job and exit code non-zero on a deliberate bad pattern (optional RED branch), then green on mainline config.
+- [ ] CI run shows Checkov step/job and exit code non-zero on a deliberate bad pattern (optional RED branch), then green on mainline config. - **Pending:** confirm on GitHub after push.
 
 **Dependencies:** Task 2.2
 
@@ -157,14 +157,14 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 **Acceptance criteria:**
 
-- [ ] Push to `main` (or default branch) touching `infra/` runs all required jobs.
-- [ ] PR touching `infra/` runs the same workflow.
-- [ ] Parent plan Task 2 checkboxes updated to `[x]` with short completion notes.
+- [ ] Push to `main` (or default branch) touching `infra/` runs all required jobs. - **Pending:** requires `git push` and Actions tab confirmation.
+- [ ] PR touching `infra/` runs the same workflow. - **Pending:** open PR after push or create test PR.
+- [x] Parent plan Task 2 checkboxes updated to `[x]` with short completion notes. - Implementation criteria marked in `docs/specs/secure-first-iac-vm-plan.md`; remote verification rows stay open until confirmed.
 
 **Verification:**
 
-- [ ] Links or run IDs noted in commit message or plan notes (optional but useful).
-- [ ] `git status` clean after commit.
+- [ ] Links or run IDs noted in commit message or plan notes (optional but useful). - Add run URL after first successful GitHub workflow.
+- [x] `git status` clean after commit. - Clean after Task 2 implementation commit; this docs-only update should be committed separately if desired.
 
 **Dependencies:** Tasks 2.1–2.5
 
@@ -178,9 +178,21 @@ Update docs/specs/secure-first-iac-vm-plan.md Task 2 checkboxes
 
 ## Checkpoint: Task 2 complete
 
-- [ ] All Task 2 success criteria in `task-2-ci-static-checks-spec.md` are satisfied.
-- [ ] No `terraform apply`, OIDC apply workflow, or Task 3 variable validation added in this task.
-- [ ] Parent `docs/specs/secure-first-iac-vm-plan.md` Task 2 section reflects completion.
+- [x] All **implementable** Task 2 success criteria in `task-2-ci-static-checks-spec.md` are satisfied locally and in repo (workflow + `.tflint.hcl`). **Remaining:** GitHub-side verification (push/PR/RED) per spec.
+- [x] No `terraform apply`, OIDC apply workflow, or Task 3 variable validation added in this task.
+- [x] Parent `docs/specs/secure-first-iac-vm-plan.md` Task 2 **implementation** acceptance rows are `[x]`; **Verification** rows remain until remote confirmation.
+
+## Increment closure (implement → verify → commit)
+
+| Slice | Done | Evidence |
+|-------|------|----------|
+| 2.1 `.tflint.hcl` | Yes | `infra/.tflint.hcl` with `azurerm` plugin block |
+| 2.2 Workflow scaffold | Yes | `on`, `paths`, `permissions`, `checkout` |
+| 2.3 fmt / init / validate | Yes | Same job order; local `terraform` commands pass |
+| 2.4 TFLint in CI | Yes | `setup-tflint@v4`, `tflint --init`, `tflint --format compact` |
+| 2.5 Checkov Action | Yes | `bridgecrewio/checkov-action@v12`, `directory: infra` |
+| 2.6 Bookkeeping | Partial | Parent plan updated; GitHub run URLs still to add |
+| Git commit | Yes | `feat: add Task 2 Terraform CI workflow and TFLint config` (hash on `main`) |
 
 ## Risks and mitigations
 
