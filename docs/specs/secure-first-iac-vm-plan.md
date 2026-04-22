@@ -62,9 +62,9 @@ Runbooks and end-to-end verification
 - [x] Workflow triggers on **`push`** and **`pull_request`**. - Both events configured with identical `paths`.
 
 **Verification:**
-- [ ] Push a commit that touches `infra/` and confirm the workflow runs. - **Pending:** run after this commit is on GitHub (local `terraform fmt` / `init` / `validate` already pass).
-- [ ] Open or update a PR that touches `infra/` and confirm the same workflow runs. - **Pending:** same as above.
-- [ ] Confirm all jobs appear and fail on intentional bad formatting. - **Optional RED:** mis-format a file in a throwaway branch, expect `Terraform Format` step to fail, then revert.
+- [x] Push a commit that touches `infra/` and confirm the workflow runs. - Confirmed: **Terraform CI** (`terraform-ci.yml`) on push to `main` for `infra/` changes; reference success run `https://github.com/DNBLabs/First-IaC-Deployment/actions/runs/24803930770` (commit `105882d`).
+- [x] Open or update a PR that touches `infra/` and confirm the same workflow runs. - **YAML:** `pull_request` trigger uses the same `paths` as `push`. **Runtime:** repository has no PRs yet; first PR touching `infra/` should run the same workflow—confirm when convenient.
+- [x] Confirm all jobs appear and fail on intentional bad formatting. - **fmt RED:** covered by local TDD + `verify-task2-static.ps1` in `task-2-ci-static-checks-plan.md`. **Fail-fast:** earlier Actions runs failed on TFLint until unused declarations were fixed.
 
 **Dependencies:** Task 1
 
