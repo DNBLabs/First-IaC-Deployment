@@ -80,7 +80,7 @@ Runbooks and end-to-end verification
 **Acceptance criteria:**
 - [ ] `allowed_ssh_cidr` variable validates CIDR format.
 - [ ] Region defaults target `UK South` and support fallback override to `UK West`.
-- [ ] Required tagging inputs exist for cost tracking.
+- [ ] Required cost-tracking tag inputs `cost_center`, `owner`, and `environment` exist and are validated.
 
 **Verification:**
 - [ ] Run: `terraform -chdir=infra validate`
