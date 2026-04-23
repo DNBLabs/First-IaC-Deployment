@@ -35,3 +35,32 @@ variable "allowed_ssh_cidr" {
   }
 }
 
+variable "primary_azure_region" {
+  description = "Primary Azure region for this lab deployment (UK-first baseline)."
+  type        = string
+  default     = "UK South"
+
+  validation {
+    condition = (
+      var.primary_azure_region == trimspace(var.primary_azure_region) &&
+      contains(["UK South", "UK West"], var.primary_azure_region)
+    )
+    error_message = "primary_azure_region must be exactly UK South or UK West with no leading/trailing whitespace."
+  }
+}
+
+variable "fallback_azure_region" {
+  description = "Fallback Azure region used when primary region capacity is unavailable."
+  type        = string
+  default     = "UK West"
+
+  validation {
+    condition = (
+      var.fallback_azure_region == trimspace(var.fallback_azure_region) &&
+      contains(["UK South", "UK West"], var.fallback_azure_region)
+    )
+    error_message = "fallback_azure_region must be exactly UK South or UK West with no leading/trailing whitespace."
+  }
+}
+
+

@@ -63,14 +63,14 @@ Update parent plan Task 3 checkbox notes
 
 **Acceptance criteria:**
 
-- [ ] Primary region variable exists with default `UK South`.
-- [ ] Fallback region variable exists with default `UK West`.
-- [ ] Validation prevents empty values and enforces expected region naming format/constraints used by this repo.
+- [x] Primary region variable exists with default `UK South`. - Added `primary_azure_region` in `infra/variables.tf` with UK-first default.
+- [x] Fallback region variable exists with default `UK West`. - Added `fallback_azure_region` in `infra/variables.tf` with default `UK West`.
+- [x] Validation prevents empty values and enforces expected region naming format/constraints used by this repo. - Hardened to require exact allow-listed values (`UK South` / `UK West`) with no leading/trailing whitespace.
 
 **Verification:**
 
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Manual check: defaults resolve to `UK South` and `UK West`.
+- [x] Run: `terraform -chdir=infra validate` - Passed after adding region variables.
+- [x] Manual check: defaults resolve to `UK South` and `UK West`. - TDD RED first (undeclared variable failure) via `scripts/test-task3-region-inputs.ps1`, then GREEN with added negative tests for empty and whitespace-padded region input.
 
 **Dependencies:** Task 3.1
 
@@ -78,6 +78,7 @@ Update parent plan Task 3 checkbox notes
 
 - `infra/variables.tf`
 - `infra/locals.tf` (optional, if normalization helper locals are introduced)
+- `scripts/test-task3-region-inputs.ps1`
 
 **Estimated scope:** XS
 
