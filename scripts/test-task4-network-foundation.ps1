@@ -66,4 +66,42 @@ if ($planText -notmatch "default_outbound_access_enabled\s+=\s+false") {
     throw "Expected planned subnet default_outbound_access_enabled to be false."
 }
 
-Write-Host "Task 4.1 test suite passed."
+Write-Host "Task 4.1 test: plan should include core NSG."
+if ($planText -notmatch "azurerm_network_security_group\.core will be created") {
+    throw "Expected azurerm_network_security_group.core to be planned for creation."
+}
+
+Write-Host "Task 4.1 test: workload subnet should be associated with core NSG."
+if ($planText -notmatch "azurerm_subnet_network_security_group_association\.workload will be created") {
+    throw "Expected azurerm_subnet_network_security_group_association.workload to be planned for creation."
+}
+
+Write-Host "Task 4.2 test: plan should include explicit SSH ingress rule resource."
+if ($planText -notmatch "azurerm_network_security_rule\.allow_ssh_from_trusted_cidr will be created") {
+    throw "Expected azurerm_network_security_rule.allow_ssh_from_trusted_cidr to be planned for creation."
+}
+
+Write-Host "Task 4.2 test: SSH ingress rule should use the trusted SSH CIDR source."
+if ($planText -notmatch 'source_address_prefix\s+=\s+"203\.0\.113\.10/32"') {
+    throw "Expected SSH rule source_address_prefix to match the default trusted CIDR 203.0.113.10/32."
+}
+
+Write-Host "Task 4.2 test: SSH ingress rule source should not be wildcard or public-open."
+if ($planText -match 'source_address_prefix\s+=\s+"\*"') {
+    throw "Expected SSH rule source_address_prefix not to use wildcard '*'."
+}
+if ($planText -match 'source_address_prefix\s+=\s+"0\.0\.0\.0/0"') {
+    throw "Expected SSH rule source_address_prefix not to use public-open CIDR 0.0.0.0/0."
+}
+
+Write-Host "Task 4.2 test: SSH ingress rule should target TCP port 22."
+if ($planText -notmatch 'destination_port_range\s+=\s+"22"') {
+    throw "Expected SSH rule destination_port_range to be 22."
+}
+
+Write-Host "Task 4.2 test: SSH ingress rule destination should be restricted to workload subnet."
+if ($planText -notmatch 'destination_address_prefix\s+=\s+"10\.0\.1\.0/24"') {
+    throw "Expected SSH rule destination_address_prefix to be 10.0.1.0/24."
+}
+
+Write-Host "Task 4.1/4.2 test suite passed."

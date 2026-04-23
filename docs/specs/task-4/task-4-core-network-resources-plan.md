@@ -65,21 +65,23 @@ Update Task 4 rows in parent plan with concise completion evidence
 
 **Acceptance criteria:**
 
-- [ ] NSG resource exists and is attached to the Task 4 resource group/region.
-- [ ] SSH inbound rule source is `allowed_ssh_cidr`, destination port is `22`, protocol is `Tcp`.
-- [ ] No SSH rule uses `0.0.0.0/0` (or equivalent public-open source) as source.
+- [x] NSG resource exists and is attached to the Task 4 resource group/region. - Added `azurerm_network_security_group.core` and retained subnet association via `azurerm_subnet_network_security_group_association.workload`.
+- [x] SSH inbound rule source is `allowed_ssh_cidr`, destination port is `22`, protocol is `Tcp`. - Added `azurerm_network_security_rule.allow_ssh_from_trusted_cidr` with `protocol = "Tcp"`, `destination_port_range = "22"`, `source_address_prefix = local.normalized_allowed_ssh_cidr`, and hardened destination scope to `destination_address_prefix = "10.0.1.0/24"`.
+- [x] No SSH rule uses `0.0.0.0/0` (or equivalent public-open source) as source. - Rule source is constrained to validated `allowed_ssh_cidr`, and Task 3 input validation rejects `0.0.0.0/0`/`::/0`.
 
 **Verification:**
 
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Manual check: `terraform -chdir=infra plan -input=false` shows SSH rule source mapped to `allowed_ssh_cidr`.
-- [ ] Manual RED: `terraform -chdir=infra plan -input=false -var "allowed_ssh_cidr=0.0.0.0/0"` fails from Task 3 validation boundary.
+- [x] Run: `terraform -chdir=infra validate` - Passed after GREEN re-introduction of `azurerm_network_security_rule.allow_ssh_from_trusted_cidr`.
+- [x] Manual check: `terraform -chdir=infra plan -input=false` shows SSH rule source mapped to `allowed_ssh_cidr`. - TDD RED/GREEN captured via `scripts/test-task4-network-foundation.ps1`: RED when the SSH rule resource was temporarily removed, then GREEN after restoring the minimal rule.
+- [x] Manual RED: `terraform -chdir=infra plan -input=false -var "allowed_ssh_cidr=0.0.0.0/0"` fails from Task 3 validation boundary. - Re-verified expected validation failure for public-open CIDR after GREEN.
+- [x] Security regression checks: SSH rule avoids wildcard/public-open source and restricts destination subnet scope. - Confirmed by `scripts/test-task4-network-foundation.ps1` assertions and a clean `checkov -d infra --framework terraform` run (`Passed checks: 11, Failed checks: 0`).
 
 **Dependencies:** Task 4.1
 
 **Files likely touched:**
 
 - `infra/main.tf` and/or `infra/network.tf`
+- `scripts/test-task4-network-foundation.ps1`
 
 **Estimated scope:** XS
 
