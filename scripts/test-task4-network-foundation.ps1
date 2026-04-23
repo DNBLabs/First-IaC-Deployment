@@ -104,4 +104,34 @@ if ($planText -notmatch 'destination_address_prefix\s+=\s+"10\.0\.1\.0/24"') {
     throw "Expected SSH rule destination_address_prefix to be 10.0.1.0/24."
 }
 
-Write-Host "Task 4.1/4.2 test suite passed."
+Write-Host "Task 4.3 test: plan should include workload network interface."
+if ($planText -notmatch "azurerm_network_interface\.workload will be created") {
+    throw "Expected azurerm_network_interface.workload to be planned for creation."
+}
+
+Write-Host "Task 4.3 test: NIC should use dynamic private IP allocation."
+if ($planText -notmatch 'private_ip_address_allocation\s+=\s+"Dynamic"') {
+    throw "Expected NIC private_ip_address_allocation to be Dynamic."
+}
+
+Write-Host "Task 4.3 test: NIC should keep IP forwarding disabled."
+if ($planText -notmatch 'ip_forwarding_enabled\s+=\s+false') {
+    throw "Expected NIC ip_forwarding_enabled to be false."
+}
+
+Write-Host "Task 4.3 test: NIC should keep accelerated networking disabled by default."
+if ($planText -notmatch 'accelerated_networking_enabled\s+=\s+false') {
+    throw "Expected NIC accelerated_networking_enabled to be false."
+}
+
+Write-Host "Task 4.3 test: NIC should not attach a public IP in Task 4.3."
+if ($planText -match 'public_ip_address_id\s+=') {
+    throw "Expected NIC plan not to include public_ip_address_id attachment."
+}
+
+Write-Host "Task 4.3 test: NIC should be associated with the core NSG."
+if ($planText -notmatch "azurerm_network_interface_security_group_association\.workload will be created") {
+    throw "Expected azurerm_network_interface_security_group_association.workload to be planned for creation."
+}
+
+Write-Host "Task 4.1/4.2/4.3 test suite passed."

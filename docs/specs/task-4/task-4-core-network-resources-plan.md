@@ -93,21 +93,24 @@ Update Task 4 rows in parent plan with concise completion evidence
 
 **Acceptance criteria:**
 
-- [ ] NIC resource exists with one IP configuration bound to the workload subnet.
-- [ ] NSG association is present and references the Task 4 NSG resource.
-- [ ] Plan graph shows NIC depends on subnet/NSG resources correctly.
+- [x] NIC resource exists with one IP configuration bound to the workload subnet. - Added `azurerm_network_interface.workload` with `ip_configuration` referencing `azurerm_subnet.workload.id` and `private_ip_address_allocation = "Dynamic"`.
+- [x] NSG association is present and references the Task 4 NSG resource. - Added `azurerm_network_interface_security_group_association.workload` binding NIC `azurerm_network_interface.workload.id` to `azurerm_network_security_group.core.id`.
+- [x] Plan graph shows NIC depends on subnet/NSG resources correctly. - Verified in plan output and Task 4.3 assertions that NIC and NIC/NSG association are created with subnet/NSG dependencies.
+- [x] NIC defaults are hardened for private-only operation. - Explicitly set `ip_forwarding_enabled = false`, `accelerated_networking_enabled = false`, and left `public_ip_address_id` unset in Task 4.3.
 
 **Verification:**
 
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Run: `terraform -chdir=infra plan -input=false`
-- [ ] Manual check: plan output includes subnet and NSG references on NIC/association resources.
+- [x] Run: `terraform -chdir=infra validate` - Passed after GREEN restoration of NIC and NIC/NSG association resources.
+- [x] Run: `terraform -chdir=infra plan -input=false` - Passed in non-interactive mode using `-refresh=false -lock=false -state="task4-tdd-plan.tfstate"` for local verification.
+- [x] Manual check: plan output includes subnet and NSG references on NIC/association resources. - TDD RED/GREEN captured by `scripts/test-task4-network-foundation.ps1`: RED when NIC resources were temporarily removed, then GREEN after restoring `azurerm_network_interface.workload` and `azurerm_network_interface_security_group_association.workload`.
+- [x] Security checks: NIC posture remains private-only and forwarding-disabled. - Confirmed by new Task 4.3 assertions plus `checkov -d infra --framework terraform` passing NIC controls (`CKV_AZURE_118`, `CKV_AZURE_119`, `CKV2_AZURE_39`).
 
 **Dependencies:** Task 4.1, Task 4.2
 
 **Files likely touched:**
 
 - `infra/main.tf` and/or `infra/network.tf`
+- `scripts/test-task4-network-foundation.ps1`
 
 **Estimated scope:** XS
 

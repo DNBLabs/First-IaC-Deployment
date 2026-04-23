@@ -51,3 +51,26 @@ resource "azurerm_subnet_network_security_group_association" "workload" {
   subnet_id                 = azurerm_subnet.workload.id
   network_security_group_id = azurerm_network_security_group.core.id
 }
+
+resource "azurerm_network_interface" "workload" {
+  name                = "${local.deployment_name_prefix}-nic"
+  location            = azurerm_resource_group.core.location
+  resource_group_name = azurerm_resource_group.core.name
+  # Keep NIC behavior least-privileged unless a later task explicitly requires otherwise.
+  ip_forwarding_enabled          = false
+  accelerated_networking_enabled = false
+  tags                = local.normalized_required_tags
+
+  ip_configuration {
+    name                          = "workload-ipconfig"
+    subnet_id                     = azurerm_subnet.workload.id
+    # Private-only NIC: no public_ip_address_id is attached in Task 4.3.
+    private_ip_address_allocation = "Dynamic"
+  }
+}
+
+resource "azurerm_network_interface_security_group_association" "workload" {
+  network_interface_id      = azurerm_network_interface.workload.id
+  network_security_group_id = azurerm_network_security_group.core.id
+}
+
