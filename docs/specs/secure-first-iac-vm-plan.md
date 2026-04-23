@@ -101,10 +101,15 @@ Runbooks and end-to-end verification
 - [ ] Network resources are declared and linked correctly.
 - [ ] NSG SSH rule uses `allowed_ssh_cidr` and does not allow `0.0.0.0/0`.
 - [ ] NIC is attached to subnet and NSG.
+- [x] Network resources are declared and linked correctly. - Task 4 now defines RG, VNet, subnet, NSG/rule, subnet NSG association, NIC, and NIC NSG association with plan-verified references.
+- [x] NSG SSH rule uses `allowed_ssh_cidr` and does not allow `0.0.0.0/0`. - `azurerm_network_security_rule.allow_ssh_from_trusted_cidr` uses validated CIDR input, and RED guard for `0.0.0.0/0` fails at variable validation.
+- [x] NIC is attached to subnet and NSG. - `azurerm_network_interface.workload` IP configuration references `azurerm_subnet.workload.id`, and NIC NSG association binds to `azurerm_network_security_group.core.id`.
 
 **Verification:**
 - [ ] Run: `terraform -chdir=infra plan`
 - [ ] Manual check: plan output shows single-source SSH rule only.
+- [x] Run: `terraform -chdir=infra plan` - Executed in non-interactive local mode (`-refresh=false -lock=false`) and confirmed Task 4 network-only resources in plan output.
+- [x] Manual check: plan output shows single-source SSH rule only. - Verified SSH rule source is `203.0.113.10/32` from `allowed_ssh_cidr` with destination limited to workload subnet `10.0.1.0/24`.
 
 **Dependencies:** Task 3
 

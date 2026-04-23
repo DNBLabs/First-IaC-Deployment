@@ -149,14 +149,14 @@ Update Task 4 rows in parent plan with concise completion evidence
 
 **Acceptance criteria:**
 
-- [ ] Parent Task 4 acceptance rows are marked `[x]` with concise evidence notes.
-- [ ] Parent Task 4 verification rows are marked `[x]` with exact command evidence.
-- [ ] Task 4 scope notes confirm no Task 5+ resources were introduced.
+- [x] Parent Task 4 acceptance rows are marked `[x]` with concise evidence notes. - Updated Task 4 acceptance criteria in `docs/specs/secure-first-iac-vm-plan.md` to completed with specific Task 4 evidence.
+- [x] Parent Task 4 verification rows are marked `[x]` with exact command evidence. - Updated parent Task 4 verification rows to completed with recorded `plan` and manual rule-scope evidence.
+- [x] Task 4 scope notes confirm no Task 5+ resources were introduced. - Parent notes remain limited to Task 4 network resources; no VM/shutdown/budget/apply workflow items were added.
 
 **Verification:**
 
-- [ ] Run: `git status --short` (confirm only expected Task 4 files changed before commit)
-- [ ] Manual check: parent plan Task 4 section reflects completed evidence notes.
+- [x] Run: `git status --short` (confirm only expected Task 4 files changed before commit) - Confirmed clean status immediately before Task 4.5 bookkeeping edits, then only Task 4 doc files changed.
+- [x] Manual check: parent plan Task 4 section reflects completed evidence notes. - Verified parent Task 4 section now shows `[x]` acceptance and verification rows with concise notes.
 
 **Dependencies:** Task 4.4
 
@@ -171,12 +171,12 @@ Update Task 4 rows in parent plan with concise completion evidence
 
 ## Checkpoint: Task 4 complete
 
-- [ ] Resource group, VNet, subnet, NSG, and NIC are declared and wired correctly.
-- [ ] SSH ingress is restricted to `allowed_ssh_cidr` (no public-open source).
-- [ ] `terraform -chdir=infra fmt -check -recursive` passes.
-- [ ] `terraform -chdir=infra validate` passes.
-- [ ] `terraform -chdir=infra plan -input=false` confirms Task 4 network-only scope.
-- [ ] Parent plan Task 4 rows are updated with concise completion evidence.
+- [x] Resource group, VNet, subnet, NSG, and NIC are declared and wired correctly. - Verified by Task 4.1-4.3 plan output and regression assertions covering resource creation and associations.
+- [x] SSH ingress is restricted to `allowed_ssh_cidr` (no public-open source). - Confirmed via explicit NSG rule checks and RED guard failure for `allowed_ssh_cidr=0.0.0.0/0`.
+- [x] `terraform -chdir=infra fmt -check -recursive` passes. - Passed after running `terraform -chdir=infra fmt -recursive`.
+- [x] `terraform -chdir=infra validate` passes. - Validation succeeds for current Task 4 network module state.
+- [x] `terraform -chdir=infra plan -input=false` confirms Task 4 network-only scope. - Non-interactive plan (`-refresh=false -lock=false`) shows only Task 4 network resources and no Task 5+ resources.
+- [x] Parent plan Task 4 rows are updated with concise completion evidence. - Updated Task 4 acceptance and verification rows in `docs/specs/secure-first-iac-vm-plan.md`.
 
 ## Risks and mitigations
 
