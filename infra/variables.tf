@@ -108,5 +108,18 @@ variable "environment" {
   }
 }
 
+variable "vm_admin_ssh_public_key" {
+  description = "Public SSH key value for VM admin authentication (OpenSSH ssh-rsa or ssh-ed25519 format only; never private key material)."
+  type        = string
 
+  validation {
+    condition = (
+      var.vm_admin_ssh_public_key == trimspace(var.vm_admin_ssh_public_key) &&
+      !can(regex("[\r\n\t]", var.vm_admin_ssh_public_key)) &&
+      !can(regex("PRIVATE KEY", upper(var.vm_admin_ssh_public_key))) &&
+      can(regex("^(ssh-rsa|ssh-ed25519) [A-Za-z0-9+/]+={0,3}(?: .+)?$", var.vm_admin_ssh_public_key))
+    )
+    error_message = "vm_admin_ssh_public_key must be a non-empty, trimmed single-line OpenSSH public key value in ssh-rsa or ssh-ed25519 format."
+  }
+}
 
