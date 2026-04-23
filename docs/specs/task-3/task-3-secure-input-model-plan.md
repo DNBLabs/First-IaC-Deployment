@@ -116,20 +116,21 @@ Update parent plan Task 3 checkbox notes
 
 **Acceptance criteria:**
 
-- [ ] Locals are present only if they reduce duplication for Task 4+.
-- [ ] Locals reference Task 3 variables and preserve explicit, readable naming.
-- [ ] No deployable resources are added.
+- [x] Locals are present only if they reduce duplication for Task 4+. - Added region-preference and normalized-tag locals reused by the Task 3 preview contract.
+- [x] Locals reference Task 3 variables and preserve explicit, readable naming. - Added `effective_primary_region`, `effective_fallback_region`, `region_preference_order`, `normalized_allowed_ssh_cidr`, and `normalized_required_tags`.
+- [x] No deployable resources are added. - Updated `infra/main.tf` locals/output composition only; no resources introduced.
 
 **Verification:**
 
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
+- [x] Run: `terraform -chdir=infra validate` - Passed after Task 3.4 locals update.
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - TDD RED first (undeclared local failure) via `scripts/test-task3-derived-locals.ps1`, then GREEN after adding derived locals; preview contract now emits normalized values and `fmt -check`/`validate` pass.
 
 **Dependencies:** Task 3.1, Task 3.2, Task 3.3
 
 **Files likely touched:**
 
 - `infra/main.tf` and/or `infra/locals.tf`
+- `scripts/test-task3-derived-locals.ps1`
 
 **Estimated scope:** XS
 
