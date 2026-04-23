@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+Validates Task 3 allowed SSH CIDR input hardening.
+
+.DESCRIPTION
+Executes Terraform validation and plan checks to prove the SSH CIDR contract
+accepts valid input while rejecting malformed and route-wide public CIDRs.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -5,6 +13,21 @@ $repositoryRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $terraformRoot = Join-Path $repositoryRoot "infra"
 
 function Invoke-TerraformPlanWithOverride {
+    <#
+    .SYNOPSIS
+    Runs Terraform plan with a temporary SSH CIDR override.
+
+    .DESCRIPTION
+    Sets `TF_VAR_allowed_ssh_cidr`, runs a side-effect-free Terraform plan,
+    returns Terraform's exit code, and removes the override afterward.
+
+    .PARAMETER AllowedSshCidr
+    Temporary value for `TF_VAR_allowed_ssh_cidr`.
+
+    .OUTPUTS
+    System.Int32
+    Terraform process exit code from the plan invocation.
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$AllowedSshCidr

@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+Validates Task 3 required-tag variable contracts for Terraform inputs.
+
+.DESCRIPTION
+Executes Terraform console and plan checks to confirm required tag variables are
+present, default safely, and reject invalid blank, padded, or overlong values.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -5,6 +13,21 @@ $repositoryRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $terraformRoot = Join-Path $repositoryRoot "infra"
 
 function Get-TerraformConsoleValue {
+    <#
+    .SYNOPSIS
+    Evaluates a Terraform console expression and returns the trimmed output.
+
+    .DESCRIPTION
+    Pipes a single expression into `terraform console` in the infra directory.
+    Throws if Terraform exits with a non-zero status so failures are loud.
+
+    .PARAMETER Expression
+    Terraform expression to evaluate, such as a variable reference.
+
+    .OUTPUTS
+    System.String
+    Trimmed Terraform console output for the requested expression.
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$Expression
@@ -19,6 +42,27 @@ function Get-TerraformConsoleValue {
 }
 
 function Invoke-TerraformPlanWithTagOverrides {
+    <#
+    .SYNOPSIS
+    Runs Terraform plan with temporary required-tag variable overrides.
+
+    .DESCRIPTION
+    Sets tag inputs through `TF_VAR_*` environment variables, runs `terraform plan`
+    without side effects, returns the Terraform exit code, and clears overrides.
+
+    .PARAMETER CostCenter
+    Temporary value for `TF_VAR_cost_center`.
+
+    .PARAMETER Owner
+    Temporary value for `TF_VAR_owner`.
+
+    .PARAMETER Environment
+    Temporary value for `TF_VAR_environment`.
+
+    .OUTPUTS
+    System.Int32
+    Terraform process exit code from the plan invocation.
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]

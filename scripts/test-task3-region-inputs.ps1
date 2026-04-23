@@ -1,3 +1,11 @@
+<#
+.SYNOPSIS
+Validates Task 3 primary and fallback Azure region input contracts.
+
+.DESCRIPTION
+Runs Terraform checks to confirm UK-first defaults are present and invalid,
+empty, or whitespace-padded region values are rejected by input validation.
+#>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -5,6 +13,25 @@ $repositoryRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 $terraformRoot = Join-Path $repositoryRoot "infra"
 
 function Invoke-TerraformPlanWithRegionOverrides {
+    <#
+    .SYNOPSIS
+    Runs Terraform plan with temporary region variable overrides.
+
+    .DESCRIPTION
+    Sets region input overrides through `TF_VAR_*` variables, executes a
+    side-effect-free Terraform plan, returns the exit code, and clears all
+    temporary environment state in a finally block.
+
+    .PARAMETER PrimaryRegion
+    Temporary value for `TF_VAR_primary_azure_region`.
+
+    .PARAMETER FallbackRegion
+    Temporary value for `TF_VAR_fallback_azure_region`.
+
+    .OUTPUTS
+    System.Int32
+    Terraform process exit code from the plan invocation.
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [AllowEmptyString()]

@@ -38,8 +38,16 @@ function Resolve-RepositoryRoot {
     <#
     .SYNOPSIS
       Resolves the git repository root when RepositoryRoot is omitted.
+
+    .DESCRIPTION
+      Uses an explicitly provided repository root when available, otherwise
+      resolves the parent directory of the scripts folder as the repository root.
+
     .PARAMETER RepositoryRoot
       Explicit repository root path, or empty to infer from script location.
+
+    .OUTPUTS
+      System.String. Absolute repository root path.
     #>
     param([string]$RepositoryRoot)
 
@@ -53,10 +61,18 @@ function Assert-InfraUnderRepositoryRoot {
     <#
     .SYNOPSIS
       Ensures the Terraform root resolves to a canonical path inside the repository (path-traversal safe).
+
+    .DESCRIPTION
+      Canonicalizes both paths and throws when the Terraform directory escapes
+      the repository boundary, preventing accidental traversal outside the repo.
+
     .PARAMETER RepoRoot
       Absolute repository root path.
     .PARAMETER InfraPath
       Absolute Terraform directory path (must equal repo root or be a subdirectory).
+
+    .OUTPUTS
+      None. Throws on invalid path boundaries.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$RepoRoot,
@@ -80,10 +96,18 @@ function Resolve-InfraPath {
     <#
     .SYNOPSIS
       Returns the absolute path to the Terraform working directory.
+
+    .DESCRIPTION
+      Supports default infra path resolution, absolute paths, and repository-
+      relative paths while returning a canonical absolute directory path.
+
     .PARAMETER RepoRoot
       Absolute path to repository root.
     .PARAMETER InfraDirectory
       Relative or absolute infra path; empty means repoRoot\infra.
+
+    .OUTPUTS
+      System.String. Absolute Terraform working directory path.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$RepoRoot,
@@ -103,8 +127,16 @@ function Invoke-Task2TerraformCoreChecks {
     <#
     .SYNOPSIS
       Runs terraform fmt -check, init -backend=false, and validate in InfraPath.
+
+    .DESCRIPTION
+      Executes core Terraform static checks in sequence and fails loudly with
+      explicit error messages when any command exits non-zero.
+
     .PARAMETER InfraPath
       Absolute path to Terraform configuration root.
+
+    .OUTPUTS
+      None. Throws on check failures.
     #>
     param([Parameter(Mandatory = $true)][string]$InfraPath)
 
@@ -137,8 +169,16 @@ function Invoke-Task2TflintIfAvailable {
     <#
     .SYNOPSIS
       Runs tflint --init and tflint when the tflint binary is on PATH.
+
+    .DESCRIPTION
+      Performs optional local parity checks for TFLint. Skips gracefully with a
+      warning when TFLint is not installed.
+
     .PARAMETER InfraPath
       Absolute path to Terraform configuration root (used as working directory).
+
+    .OUTPUTS
+      None. Throws only when TFLint is present and fails.
     #>
     param([Parameter(Mandatory = $true)][string]$InfraPath)
 
@@ -170,10 +210,18 @@ function Invoke-Task2CheckovIfAvailable {
     <#
     .SYNOPSIS
       Runs checkov against InfraPath when checkov is on PATH (optional local parity with checkov-action).
+
+    .DESCRIPTION
+      Validates path safety, computes a repository-relative target directory,
+      and executes Checkov from repository root when the binary is available.
+
     .PARAMETER RepoRoot
       Repository root (checkov scans from repo with -d infra relative path).
     .PARAMETER InfraPath
       Absolute infra path — used to derive relative directory for checkov -d.
+
+    .OUTPUTS
+      None. Throws only when Checkov is present and fails.
     #>
     param(
         [Parameter(Mandatory = $true)][string]$RepoRoot,
