@@ -98,18 +98,13 @@ Runbooks and end-to-end verification
 **Description:** Add resource group, VNet, subnet, NSG, and NIC with a restrictive SSH rule tied to `allowed_ssh_cidr`.
 
 **Acceptance criteria:**
-- [ ] Network resources are declared and linked correctly.
-- [ ] NSG SSH rule uses `allowed_ssh_cidr` and does not allow `0.0.0.0/0`.
-- [ ] NIC is attached to subnet and NSG.
-- [x] Network resources are declared and linked correctly. - Task 4 now defines RG, VNet, subnet, NSG/rule, subnet NSG association, NIC, and NIC NSG association with plan-verified references.
-- [x] NSG SSH rule uses `allowed_ssh_cidr` and does not allow `0.0.0.0/0`. - `azurerm_network_security_rule.allow_ssh_from_trusted_cidr` uses validated CIDR input, and RED guard for `0.0.0.0/0` fails at variable validation.
-- [x] NIC is attached to subnet and NSG. - `azurerm_network_interface.workload` IP configuration references `azurerm_subnet.workload.id`, and NIC NSG association binds to `azurerm_network_security_group.core.id`.
+- [x] Network resources are declared and linked correctly. - Re-verified via Task 4 test suite and Terraform plan output showing RG/VNet/subnet/NSG/NIC and associations.
+- [x] NSG SSH rule uses `allowed_ssh_cidr` and does not allow `0.0.0.0/0`. - Re-verified in plan output with `source_address_prefix = "203.0.113.10/32"` and no public-open source.
+- [x] NIC is attached to subnet and NSG. - Re-verified by plan output and Task 4 script assertions for NIC subnet binding and NIC-NSG association.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra plan`
-- [ ] Manual check: plan output shows single-source SSH rule only.
-- [x] Run: `terraform -chdir=infra plan` - Executed in non-interactive local mode (`-refresh=false -lock=false`) and confirmed Task 4 network-only resources in plan output.
-- [x] Manual check: plan output shows single-source SSH rule only. - Verified SSH rule source is `203.0.113.10/32` from `allowed_ssh_cidr` with destination limited to workload subnet `10.0.1.0/24`.
+- [x] Run: `terraform -chdir=infra plan` - Re-ran non-interactive plan (`-refresh=false -lock=false`) and confirmed expected Task 4 network graph.
+- [x] Manual check: plan output shows single-source SSH rule only. - Confirmed only trusted source CIDR (`203.0.113.10/32`) is used for SSH ingress.
 
 **Dependencies:** Task 3
 
@@ -120,10 +115,10 @@ Runbooks and end-to-end verification
 **Estimated scope:** M (3-5 files)
 
 ### Checkpoint: Foundation (After Tasks 1-4)
-- [ ] `terraform -chdir=infra fmt -check -recursive` passes
-- [ ] `terraform -chdir=infra validate` passes
-- [ ] Plan shows no public-open SSH exposure
-- [ ] Review before proceeding
+- [x] `terraform -chdir=infra fmt -check -recursive` passes - Re-run completed successfully with no formatting issues.
+- [x] `terraform -chdir=infra validate` passes - Re-run completed successfully.
+- [x] Plan shows no public-open SSH exposure - Re-run plan shows SSH source restricted to trusted CIDR and destination subnet scope.
+- [x] Review before proceeding - Task 4 status re-verified from script + plan evidence and root plan entries aligned.
 
 ### Phase 2: Core Infrastructure Safety
 
