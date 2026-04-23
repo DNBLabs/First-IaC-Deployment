@@ -33,14 +33,14 @@ resource "azurerm_network_security_group" "core" {
 }
 
 resource "azurerm_network_security_rule" "allow_ssh_from_trusted_cidr" {
-  name                        = "allow-ssh-from-trusted-cidr"
-  priority                    = 100
-  direction                   = "Inbound"
-  access                      = "Allow"
-  protocol                    = "Tcp"
-  source_port_range           = "*"
-  destination_port_range      = "22"
-  source_address_prefix       = local.normalized_allowed_ssh_cidr
+  name                   = "allow-ssh-from-trusted-cidr"
+  priority               = 100
+  direction              = "Inbound"
+  access                 = "Allow"
+  protocol               = "Tcp"
+  source_port_range      = "*"
+  destination_port_range = "22"
+  source_address_prefix  = local.normalized_allowed_ssh_cidr
   # Limit SSH destination scope to the workload subnet CIDR only.
   destination_address_prefix  = "10.0.1.0/24"
   resource_group_name         = azurerm_resource_group.core.name
@@ -59,11 +59,11 @@ resource "azurerm_network_interface" "workload" {
   # Keep NIC behavior least-privileged unless a later task explicitly requires otherwise.
   ip_forwarding_enabled          = false
   accelerated_networking_enabled = false
-  tags                = local.normalized_required_tags
+  tags                           = local.normalized_required_tags
 
   ip_configuration {
-    name                          = "workload-ipconfig"
-    subnet_id                     = azurerm_subnet.workload.id
+    name      = "workload-ipconfig"
+    subnet_id = azurerm_subnet.workload.id
     # Private-only NIC: no public_ip_address_id is attached in Task 4.3.
     private_ip_address_allocation = "Dynamic"
   }

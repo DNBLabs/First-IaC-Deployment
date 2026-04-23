@@ -122,16 +122,16 @@ Update Task 4 rows in parent plan with concise completion evidence
 
 **Acceptance criteria:**
 
-- [ ] `terraform -chdir=infra fmt -check -recursive` passes.
-- [ ] `terraform -chdir=infra validate` passes.
-- [ ] `terraform -chdir=infra plan -input=false` shows only Task 4 network-layer resources for this slice.
+- [x] `terraform -chdir=infra fmt -check -recursive` passes. - Ran after formatting `infra/network.tf`; check now passes.
+- [x] `terraform -chdir=infra validate` passes. - Validation succeeds with Task 4.1-4.3 resources.
+- [x] `terraform -chdir=infra plan -input=false` shows only Task 4 network-layer resources for this slice. - Plan shows only RG, VNet, subnet, NSG/rule/associations, and NIC resources (no VM, shutdown, or budget resources).
 
 **Verification:**
 
-- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Run: `terraform -chdir=infra plan -input=false`
-- [ ] Manual RED: `terraform -chdir=infra plan -input=false -var "allowed_ssh_cidr=0.0.0.0/0"` fails.
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform -chdir=infra fmt -recursive`.
+- [x] Run: `terraform -chdir=infra validate` - Passed.
+- [x] Run: `terraform -chdir=infra plan -input=false` - Passed in non-interactive mode with `-refresh=false -lock=false -state="task4-tdd-plan.tfstate"` for local verification.
+- [x] Manual RED: `terraform -chdir=infra plan -input=false -var "allowed_ssh_cidr=0.0.0.0/0"` fails. - Reconfirmed expected Task 3 validation failure blocking public-open SSH CIDR.
 
 **Dependencies:** Task 4.1, Task 4.2, Task 4.3
 
