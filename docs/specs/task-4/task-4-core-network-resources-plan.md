@@ -1,0 +1,187 @@
+# Implementation Plan: Task 4 - Core network resources
+
+## Overview
+
+This plan implements **Task 4 only** from `docs/specs/secure-first-iac-vm-plan.md`, driven by `docs/specs/task-4/task-4-core-network-resources-spec.md`. It adds Azure core network primitives (resource group, VNet, subnet, NSG, NIC) with restrictive SSH ingress bound to the validated Task 3 trust boundary. No VM, shutdown policy, budget resources, CI workflow expansion, or Task 5+ work is included.
+
+## Architecture Decisions
+
+- Reuse Task 3 validated/derived inputs for region and SSH trust boundary to avoid duplicated normalization logic.
+- Use a conservative private address baseline for this lab: VNet `10.0.0.0/16` and subnet `10.0.1.0/24`.
+- Keep network composition explicit and beginner-readable in Terraform resource definitions.
+- Enforce least privilege at the network edge by allowing SSH only from `allowed_ssh_cidr`.
+- Keep Task 4 file churn minimal (`infra/main.tf` and/or `infra/network.tf`, plus plan docs updates).
+
+## Dependency Graph
+
+```
+Task 1-3 baseline complete (provider + secure inputs + derived locals)
+    ->
+Add resource group + VNet + subnet foundation
+    ->
+Add NSG with restricted SSH ingress from allowed_ssh_cidr
+    ->
+Add NIC and NSG/subnet associations
+    ->
+Run fmt / validate / plan checks (GREEN) + SSH boundary verification
+    ->
+Update Task 4 rows in parent plan with concise completion evidence
+```
+
+## Task List
+
+### Task 4.1: Add resource group and private network foundation
+
+**Description:** Add the Azure resource group, virtual network, and workload subnet resources using Task 3 region inputs and the resolved private CIDR baseline (`10.0.0.0/16`, `10.0.1.0/24`).
+
+**Acceptance criteria:**
+
+- [x] Resource group, VNet, and subnet resources are declared with clear naming. - Added `azurerm_resource_group.core`, `azurerm_virtual_network.core`, and `azurerm_subnet.workload` in `infra/network.tf`.
+- [x] VNet address space is `10.0.0.0/16` and subnet address prefix is `10.0.1.0/24`. - Configured `address_space = ["10.0.0.0/16"]` and `address_prefixes = ["10.0.1.0/24"]`.
+- [x] Region selection references Task 3 region locals/inputs (no duplicate hardcoded region logic). - Resource group location uses `local.effective_primary_region`, and network resources inherit RG location/name references.
+- [x] Subnet defaults are hardened for private-by-default posture. - Set `default_outbound_access_enabled = false` on `azurerm_subnet.workload` to disable implicit outbound internet access.
+
+**Verification:**
+
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after GREEN implementation in `infra/network.tf`.
+- [x] Run: `terraform -chdir=infra validate` - Passed after GREEN implementation in `infra/network.tf`.
+- [x] Manual check: `terraform -chdir=infra plan -input=false` shows RG -> VNet -> subnet linkage. - TDD RED/GREEN captured in `scripts/test-task4-network-foundation.ps1`: RED with missing resources first, then GREEN after adding `infra/network.tf` (script uses non-interactive plan mode).
+- [x] Security check: subnet implicit outbound access is disabled in planned config. - Confirmed by `scripts/test-task4-network-foundation.ps1` assertion on `default_outbound_access_enabled = false`.
+
+**Dependencies:** Task 3 complete
+
+**Files likely touched:**
+
+- `infra/main.tf` and/or `infra/network.tf`
+- `scripts/test-task4-network-foundation.ps1`
+
+**Estimated scope:** XS
+
+---
+
+### Task 4.2: Add NSG with restrictive SSH ingress contract
+
+**Description:** Define an NSG with an explicit inbound SSH rule that uses `allowed_ssh_cidr` as source and does not permit public-open ranges.
+
+**Acceptance criteria:**
+
+- [ ] NSG resource exists and is attached to the Task 4 resource group/region.
+- [ ] SSH inbound rule source is `allowed_ssh_cidr`, destination port is `22`, protocol is `Tcp`.
+- [ ] No SSH rule uses `0.0.0.0/0` (or equivalent public-open source) as source.
+
+**Verification:**
+
+- [ ] Run: `terraform -chdir=infra validate`
+- [ ] Manual check: `terraform -chdir=infra plan -input=false` shows SSH rule source mapped to `allowed_ssh_cidr`.
+- [ ] Manual RED: `terraform -chdir=infra plan -input=false -var "allowed_ssh_cidr=0.0.0.0/0"` fails from Task 3 validation boundary.
+
+**Dependencies:** Task 4.1
+
+**Files likely touched:**
+
+- `infra/main.tf` and/or `infra/network.tf`
+
+**Estimated scope:** XS
+
+---
+
+### Task 4.3: Add NIC and complete network associations
+
+**Description:** Add a network interface bound to the workload subnet and associated with the NSG so Task 5 VM work can attach safely without refactoring network primitives.
+
+**Acceptance criteria:**
+
+- [ ] NIC resource exists with one IP configuration bound to the workload subnet.
+- [ ] NSG association is present and references the Task 4 NSG resource.
+- [ ] Plan graph shows NIC depends on subnet/NSG resources correctly.
+
+**Verification:**
+
+- [ ] Run: `terraform -chdir=infra validate`
+- [ ] Run: `terraform -chdir=infra plan -input=false`
+- [ ] Manual check: plan output includes subnet and NSG references on NIC/association resources.
+
+**Dependencies:** Task 4.1, Task 4.2
+
+**Files likely touched:**
+
+- `infra/main.tf` and/or `infra/network.tf`
+
+**Estimated scope:** XS
+
+---
+
+### Task 4.4: End-to-end Task 4 security and topology verification
+
+**Description:** Execute full Task 4 checks and document concise GREEN/RED evidence for formatting, validation, plan topology, and SSH trust-boundary behavior.
+
+**Acceptance criteria:**
+
+- [ ] `terraform -chdir=infra fmt -check -recursive` passes.
+- [ ] `terraform -chdir=infra validate` passes.
+- [ ] `terraform -chdir=infra plan -input=false` shows only Task 4 network-layer resources for this slice.
+
+**Verification:**
+
+- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
+- [ ] Run: `terraform -chdir=infra validate`
+- [ ] Run: `terraform -chdir=infra plan -input=false`
+- [ ] Manual RED: `terraform -chdir=infra plan -input=false -var "allowed_ssh_cidr=0.0.0.0/0"` fails.
+
+**Dependencies:** Task 4.1, Task 4.2, Task 4.3
+
+**Files likely touched:**
+
+- `docs/specs/task-4/task-4-core-network-resources-plan.md` (verification notes/checklist updates)
+
+**Estimated scope:** XS
+
+---
+
+### Task 4.5: Parent plan Task 4 bookkeeping
+
+**Description:** Update Task 4 acceptance and verification checkboxes in `docs/specs/secure-first-iac-vm-plan.md` with one-line completion notes backed by Task 4 verification evidence.
+
+**Acceptance criteria:**
+
+- [ ] Parent Task 4 acceptance rows are marked `[x]` with concise evidence notes.
+- [ ] Parent Task 4 verification rows are marked `[x]` with exact command evidence.
+- [ ] Task 4 scope notes confirm no Task 5+ resources were introduced.
+
+**Verification:**
+
+- [ ] Run: `git status --short` (confirm only expected Task 4 files changed before commit)
+- [ ] Manual check: parent plan Task 4 section reflects completed evidence notes.
+
+**Dependencies:** Task 4.4
+
+**Files likely touched:**
+
+- `docs/specs/secure-first-iac-vm-plan.md`
+- `docs/specs/task-4/task-4-core-network-resources-plan.md`
+
+**Estimated scope:** XS
+
+---
+
+## Checkpoint: Task 4 complete
+
+- [ ] Resource group, VNet, subnet, NSG, and NIC are declared and wired correctly.
+- [ ] SSH ingress is restricted to `allowed_ssh_cidr` (no public-open source).
+- [ ] `terraform -chdir=infra fmt -check -recursive` passes.
+- [ ] `terraform -chdir=infra validate` passes.
+- [ ] `terraform -chdir=infra plan -input=false` confirms Task 4 network-only scope.
+- [ ] Parent plan Task 4 rows are updated with concise completion evidence.
+
+## Risks and mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Accidental scope creep into VM resources | Medium | Keep file edits constrained to network resources and Task 4 docs only |
+| Incorrect NSG association path (subnet vs NIC) causes drift/confusion | Medium | Follow one explicit association pattern and verify references in plan output |
+| Address-space overlap with future subnets | Low | Use lab baseline `10.0.0.0/16` + `10.0.1.0/24`; reserve additional ranges for later tasks |
+| Hidden regression from formatting or provider schema changes | Low | Run `fmt`, `validate`, and `plan` after each slice before progressing |
+
+## Open questions
+
+- None. Task 4 CIDR baseline is resolved to VNet `10.0.0.0/16` and subnet `10.0.1.0/24`.
