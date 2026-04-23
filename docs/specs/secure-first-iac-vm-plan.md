@@ -78,13 +78,13 @@ Runbooks and end-to-end verification
 **Description:** Define variables and validation for region fallback, SSH CIDR format, naming, and tags to enforce secure and predictable configuration from the boundary.
 
 **Acceptance criteria:**
-- [ ] `allowed_ssh_cidr` variable validates CIDR format.
-- [ ] Region defaults target `UK South` and support fallback override to `UK West`.
-- [ ] Required cost-tracking tag inputs `cost_center`, `owner`, and `environment` exist and are validated.
+- [x] `allowed_ssh_cidr` variable validates CIDR format. - Enforced in `infra/variables.tf` and re-verified with RED checks for malformed/public-open CIDRs.
+- [x] Region defaults target `UK South` and support fallback override to `UK West`. - `primary_azure_region`/`fallback_azure_region` defaults and allow-list validation are implemented and re-verified.
+- [x] Required cost-tracking tag inputs `cost_center`, `owner`, and `environment` exist and are validated. - All three variables enforce non-empty, trimmed, and max-length constraints with passing Task 3 test coverage.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Manual check: invalid CIDR values fail validation.
+- [x] Run: `terraform -chdir=infra validate` - Re-run during Task 3.5 and passed.
+- [x] Manual check: invalid CIDR values fail validation. - Re-run via `scripts/test-task3-allowed-ssh-cidr.ps1` with expected failures for `not-a-cidr`, `0.0.0.0/0`, and `::/0`.
 
 **Dependencies:** Task 1
 
