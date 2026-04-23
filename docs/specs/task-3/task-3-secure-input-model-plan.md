@@ -90,20 +90,21 @@ Update parent plan Task 3 checkbox notes
 
 **Acceptance criteria:**
 
-- [ ] Inputs exist for `cost_center`, `owner`, and `environment`.
-- [ ] Validation enforces non-empty values (trimmed) for all three required keys.
-- [ ] Descriptions clearly communicate governance intent and later resource usage.
+- [x] Inputs exist for `cost_center`, `owner`, and `environment`. - Added all three variables in `infra/variables.tf` with defaults for Task 3 validation.
+- [x] Validation enforces non-empty values (trimmed) for all three required keys. - Hardened tag validation to require non-empty values, reject leading/trailing whitespace, and cap values at 256 characters.
+- [x] Descriptions clearly communicate governance intent and later resource usage. - Variable descriptions specify cost allocation, accountable owner, and environment governance use.
 
 **Verification:**
 
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Manual RED: blank any required tag value and confirm validation failure.
+- [x] Run: `terraform -chdir=infra validate` - Passed after adding required tag variables.
+- [x] Manual RED: blank any required tag value and confirm validation failure. - TDD RED first (undeclared variable failure) via `scripts/test-task3-required-tags.ps1`, then GREEN with explicit failures for blank values, whitespace-padded owner, and overlong environment input.
 
 **Dependencies:** Task 3.2
 
 **Files likely touched:**
 
 - `infra/variables.tf`
+- `scripts/test-task3-required-tags.ps1`
 
 **Estimated scope:** XS
 

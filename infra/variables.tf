@@ -63,4 +63,50 @@ variable "fallback_azure_region" {
   }
 }
 
+variable "cost_center" {
+  description = "Cost allocation tag value used for budget ownership and chargeback reporting."
+  type        = string
+  default     = "shared-services"
+
+  validation {
+    condition = (
+      trimspace(var.cost_center) != "" &&
+      var.cost_center == trimspace(var.cost_center) &&
+      length(var.cost_center) <= 256
+    )
+    error_message = "cost_center must be non-empty, contain no leading/trailing whitespace, and be 256 characters or fewer."
+  }
+}
+
+variable "owner" {
+  description = "Responsible owner tag value for operational accountability."
+  type        = string
+  default     = "platform-team"
+
+  validation {
+    condition = (
+      trimspace(var.owner) != "" &&
+      var.owner == trimspace(var.owner) &&
+      length(var.owner) <= 256
+    )
+    error_message = "owner must be non-empty, contain no leading/trailing whitespace, and be 256 characters or fewer."
+  }
+}
+
+variable "environment" {
+  description = "Environment tag value used for governance and policy targeting (for example dev/test/prod)."
+  type        = string
+  default     = "dev"
+
+  validation {
+    condition = (
+      trimspace(var.environment) != "" &&
+      var.environment == trimspace(var.environment) &&
+      length(var.environment) <= 256
+    )
+    error_message = "environment must be non-empty, contain no leading/trailing whitespace, and be 256 characters or fewer."
+  }
+}
+
+
 
