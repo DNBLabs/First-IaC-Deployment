@@ -110,12 +110,12 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Description:** Mark Task 6 sub-tasks and checkpoints complete in this plan and update **`docs/specs/secure-first-iac-vm-plan.md`** Task 6 acceptance and verification rows with evidence tied to Task 6.3.
 
 **Acceptance criteria:**
-- [ ] All Task 6.1–6.3 checklist rows in this file are `[x]` with one-sentence summaries where applicable.
-- [ ] “Checkpoint: Task 6 complete” below is fully checked with evidence.
-- [ ] Parent plan Task 6 rows (`docs/specs/secure-first-iac-vm-plan.md`) are `[x]` with concise notes (VM target, 19:00/`1900`, UTC/GMT, notifications off, tags).
+- [x] All Task 6.1–6.3 checklist rows in this file are `[x]` with one-sentence summaries where applicable. - Confirmed: Phase 1–3 task rows and infrastructure checkpoint above are fully checked with evidence through Task 6.3.
+- [x] “Checkpoint: Task 6 complete” below is fully checked with evidence. - See checkpoint section updates in this edit.
+- [x] Parent plan Task 6 rows (`docs/specs/secure-first-iac-vm-plan.md`) are `[x]` with concise notes (VM target, 19:00/`1900`, UTC/GMT, notifications off, tags). - Parent **Task 6** acceptance and verification updated to mirror this file; Task 7 rows untouched.
 
 **Verification:**
-- [ ] Manual check: both plan documents reflect the same evidence and no Task 7 rows were modified.
+- [x] Manual check: both plan documents reflect the same evidence and no Task 7 rows were modified. - Task 6 narrative and commands align across both plans; `## Task 7` in the parent plan was not edited.
 
 **Dependencies:** Task 6.3
 
@@ -126,9 +126,9 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Estimated scope:** XS
 
 ### Checkpoint: Task 6 complete
-- [ ] All Task 6 acceptance criteria from the **spec** are satisfied with evidence.
-- [ ] Verification evidence recorded in this plan and the parent plan.
-- [ ] Scope lock preserved: **no Task 7** implementation started.
+- [x] All Task 6 acceptance criteria from the **spec** are satisfied with evidence. - Spec objectives met: `azurerm_dev_test_global_vm_shutdown_schedule.workload` targets `azurerm_linux_virtual_machine.workload`, `daily_recurrence_time = "1900"`, default `timezone` **UTC** (GMT baseline), `notification_settings.enabled = false`, `tags = local.normalized_required_tags`; details in `task-6-vm-auto-shutdown-spec.md` and sub-tasks 6.1–6.3 above.
+- [x] Verification evidence recorded in this plan and the parent plan. - Task 6.3 commands and outcomes documented here; parent `secure-first-iac-vm-plan.md` Task 6 rows updated with the same thread (Terraform CLI: https://developer.hashicorp.com/terraform/cli/commands/fmt , https://developer.hashicorp.com/terraform/cli/commands/validate , https://developer.hashicorp.com/terraform/cli/commands/plan ).
+- [x] Scope lock preserved: **no Task 7** implementation started. - No budget resources in `infra/`; parent Task 7 checklists unchanged.
 
 ## Risks and Mitigations
 | Risk | Impact | Mitigation |

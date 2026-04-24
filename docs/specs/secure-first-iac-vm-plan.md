@@ -146,12 +146,12 @@ Runbooks and end-to-end verification
 **Description:** Configure Azure VM auto-shutdown policy/schedule so the VM powers down daily to reduce cost risk.
 
 **Acceptance criteria:**
-- [ ] Auto-shutdown resource exists and targets the VM.
-- [ ] Shutdown is configured for 19:00 in the chosen timezone.
+- [x] Auto-shutdown resource exists and targets the VM. - `infra/cost_controls.tf`: `azurerm_dev_test_global_vm_shutdown_schedule.workload` with `virtual_machine_id = azurerm_linux_virtual_machine.workload.id` (detail plan: `docs/specs/task-6/task-6-vm-auto-shutdown-plan.md`; provider: https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/dev_test_global_vm_shutdown_schedule.html.markdown ).
+- [x] Shutdown is configured for 19:00 in the chosen timezone. - `daily_recurrence_time = "1900"` with `timezone = var.vm_auto_shutdown_timezone` default **UTC** (GMT baseline per `docs/specs/task-6/task-6-vm-auto-shutdown-spec.md`); notifications off (`notification_settings.enabled = false`); required tags on the schedule resource.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra plan`
-- [ ] Manual check: plan includes auto-shutdown configuration.
+- [x] Run: `terraform -chdir=infra plan` - Non-interactive `terraform -chdir=infra plan -input=false` with `TF_VAR_vm_admin_ssh_public_key` per https://developer.hashicorp.com/terraform/cli/commands/plan ; `fmt -check` / `validate` / plan outcomes recorded in `docs/specs/task-6/task-6-vm-auto-shutdown-plan.md` Task 6.3.
+- [x] Manual check: plan includes auto-shutdown configuration. - Confirmed `1900`, `UTC`, workload VM wiring, tags, and notifications disabled; regression: `scripts/test-task6-2-shutdown-schedule-plan-contract.ps1` passes.
 
 **Dependencies:** Task 5
 
