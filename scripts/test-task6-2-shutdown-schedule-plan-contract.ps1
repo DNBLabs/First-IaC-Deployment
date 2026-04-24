@@ -11,6 +11,8 @@ Also asserts no Azure budget resource types appear in the plan (Task 7 out of sc
 .NOTES
 Post-hoc contract test for Task 6.2 after cost_controls.tf landed; re-run when
 the shutdown schedule resource, variables, or related root inputs change.
+Failure paths pass Terraform output through Get-RedactedTerraformDiagnosticsExcerpt
+so OpenSSH public key lines are not dumped verbatim into logs.
 
 Terraform plan (non-interactive):
 https://developer.hashicorp.com/terraform/cli/commands/plan#input-false
@@ -20,6 +22,54 @@ https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/webs
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+function Get-RedactedTerraformDiagnosticsExcerpt {
+  <#
+  .SYNOPSIS
+  Redacts OpenSSH public-key material from captured Terraform output before embedding in errors.
+
+  .DESCRIPTION
+  Plan and validate output can echo variable-derived strings (including vm_admin_ssh_public_key).
+  Thrown exceptions must not replay full key blobs into CI or local logs.
+
+  .PARAMETER RawText
+  Merged stdout/stderr from terraform.
+
+  .PARAMETER MaxLength
+  Maximum characters after redaction.
+
+  .OUTPUTS
+  [string] Redacted excerpt suitable for failure diagnostics.
+  #>
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RawText,
+    [Parameter(Mandatory = $false)]
+    [int]$MaxLength = 6000
+  )
+
+  if ([string]::IsNullOrEmpty($RawText)) {
+    return ""
+  }
+
+  $working = $RawText
+  $working = [regex]::Replace($working, '"public_key"\s*:\s*"[^"]*"', '"public_key":"[REDACTED]"')
+  $working = [regex]::Replace(
+    $working,
+    '(\+\s+public_key\s*=\s")[^"\r\n]*(")',
+    '${1}[REDACTED]${2}'
+  )
+  $working = [regex]::Replace(
+    $working,
+    'ssh-(ed25519|rsa)\s+[^\r\n]+',
+    'ssh-$1 [REDACTED]'
+  )
+
+  if ($working.Length -gt $MaxLength) {
+    return $working.Substring(0, $MaxLength) + "`n... (truncated; max $MaxLength chars)"
+  }
+  return $working
+}
 
 function Invoke-TerraformInfraCommand {
   <#
@@ -104,6 +154,21 @@ function Assert-PlanTextExcludesBudgetResources {
   }
 }
 
+function Assert-PlanTextExcludesShutdownNotificationChannels {
+  <#
+  .SYNOPSIS
+  Ensures the plan does not include webhook_url (Task 6 lab default: no notification endpoints in graph).
+  #>
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$PlanText
+  )
+
+  if ($PlanText.IndexOf("webhook_url", [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+    throw "Task 6.2 contract: plan must not include webhook_url (use notification_settings.enabled = false only for this lab; webhooks require secret handling)."
+  }
+}
+
 $script:ValidSshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuSlvxTWf2H0tLCtLkM3PQWmZAnOEkjBLdyVAKDL43z task5-validation"
 
 $previousTfVar = $env:TF_VAR_vm_admin_ssh_public_key
@@ -120,7 +185,8 @@ try {
     "-no-color"
   )
   if ($planResult.ExitCode -ne 0) {
-    throw "Task 6.2 contract: expected terraform plan to succeed. Exit code $($planResult.ExitCode). Output:`n$($planResult.Output)"
+    $redacted = Get-RedactedTerraformDiagnosticsExcerpt -RawText $planResult.Output
+    throw "Task 6.2 contract: expected terraform plan to succeed. Exit code $($planResult.ExitCode). Redacted output:`n$redacted"
   }
 
   $planText = $planResult.Output
@@ -142,11 +208,13 @@ try {
   Assert-PlanTextContains -PlanText $planText -RequiredSubstring "+ enabled         = false" `
     -AssertionLabel "pre-shutdown notifications disabled inside notification_settings"
   Assert-PlanTextExcludesBudgetResources -PlanText $planText
+  Assert-PlanTextExcludesShutdownNotificationChannels -PlanText $planText
 
   Write-Host "Task 6.2 test: terraform validate should pass."
   $validateResult = Invoke-TerraformInfraCommand @("validate")
   if ($validateResult.ExitCode -ne 0) {
-    throw "Task 6.2 contract: expected terraform validate to pass. Output:`n$($validateResult.Output)"
+    $redactedValidate = Get-RedactedTerraformDiagnosticsExcerpt -RawText $validateResult.Output
+    throw "Task 6.2 contract: expected terraform validate to pass. Redacted output:`n$redactedValidate"
   }
 }
 finally {

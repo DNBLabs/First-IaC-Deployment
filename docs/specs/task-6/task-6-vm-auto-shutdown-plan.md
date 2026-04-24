@@ -63,7 +63,7 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 - [x] `location` matches the resource group / VM region pattern used elsewhere (`azurerm_resource_group.core.location`). - Matches `compute.tf` / `network.tf` pattern.
 - [x] `daily_recurrence_time = "1900"` and schedule `enabled = true` (shutdown policy on; notifications off). - Explicit `enabled = true`; `notification_settings { enabled = false }`.
 - [x] `tags = local.normalized_required_tags` is set. - Same mapping as workload VM.
-- [x] No `email` or `webhook_url` blocks appear in committed configuration. - Omitted; plan may still show provider default `time_in_minutes` inside `notification_settings` when notifications are off.
+- [x] No `email` or `webhook_url` blocks appear in committed configuration. - Omitted; plan may still show provider default `time_in_minutes` inside `notification_settings` when notifications are off; `cost_controls.tf` header documents no hardcoded notification secrets; contract script redacts SSH material in thrown errors and rejects `webhook_url` in plan text.
 
 **Verification:**
 - [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.

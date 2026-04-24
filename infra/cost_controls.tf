@@ -4,6 +4,10 @@ workload VM. Resource shape follows the AzureRM argument reference for
 azurerm_dev_test_global_vm_shutdown_schedule (required location, virtual_machine_id,
 daily_recurrence_time, timezone, and notification_settings).
 
+Security (lab default): keep pre-shutdown notifications off (notification_settings.enabled = false).
+Do not add email or webhook_url here without a follow-on task that loads endpoints from a secrets
+manager or environment—never hardcode webhooks, tokens, or personal email in committed Terraform.
+
 Source: https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/dev_test_global_vm_shutdown_schedule.html.markdown
 */
 
