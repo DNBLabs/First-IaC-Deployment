@@ -164,6 +164,8 @@ Runbooks and end-to-end verification
 ## Task 7: Add budget alert configuration
 **Description:** Add Azure budget resources with threshold alerts and notification targets for early spend visibility.
 
+**Spec (source of truth for implementation):** `docs/specs/task-7/task-7-budget-alerts-spec.md`
+
 **Acceptance criteria:**
 - [ ] Budget resource is defined with monthly scope.
 - [ ] Threshold and notification recipient variables are configurable.
@@ -178,8 +180,10 @@ Runbooks and end-to-end verification
 **Files likely touched:**
 - `infra/cost_controls.tf`
 - `infra/variables.tf`
+- `docs/specs/task-7/task-7-budget-alerts-spec.md`
+- `docs/specs/task-7/task-7-budget-alerts-plan.md` (implementation plan; created when Task 7 is planned)
 
-**Estimated scope:** S (1-2 files)
+**Estimated scope:** S (Terraform root module edits); XS (Task 7 spec/plan under `docs/specs/task-7/`).
 
 ### Checkpoint: Core Infrastructure Safety (After Tasks 5-7)
 - [ ] `terraform -chdir=infra validate` passes
