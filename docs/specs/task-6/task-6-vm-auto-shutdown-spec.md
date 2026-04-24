@@ -55,6 +55,7 @@ Example with local state file and no refresh (optional, for automation parity wi
 - `infra/variables.tf` — Variable for shutdown time zone (default `UTC`); no notification-secret variables in Task 6.
 - `infra/compute.tf` — **Read-only reference** for `azurerm_linux_virtual_machine.workload.id`; do not change VM shape in Task 6 unless a spec amendment explicitly requires it.
 - `docs/specs/task-6/task-6-vm-auto-shutdown-spec.md` — This document.
+- `docs/specs/task-6/task-6-vm-auto-shutdown-plan.md` — Implementation plan and sub-task checklist (6.1–6.4).
 
 **Out of scope for Task 6:**
 - Task 7 budget alerts and thresholds.
