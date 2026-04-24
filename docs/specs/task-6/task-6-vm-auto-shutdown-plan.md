@@ -69,11 +69,13 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 - [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.
 - [x] Run: `terraform -chdir=infra validate` - Passed.
 - [x] Run: `terraform -chdir=infra plan -input=false` with valid `vm_admin_ssh_public_key` (and any other required vars); plan shows **one** new `azurerm_dev_test_global_vm_shutdown_schedule` (or agreed resource name) and **does not** add Task 7 budget resources. - Passed using `TF_VAR_vm_admin_ssh_public_key` (non-interactive); plan includes `azurerm_dev_test_global_vm_shutdown_schedule.workload` with `1900`, `UTC`, `notification_settings.enabled = false`, and no budget/consumption resources.
+- [x] Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task6-2-shutdown-schedule-plan-contract.ps1` from repo root - Passed; script asserts plan text includes schedule wiring, `1900`, default `UTC`, notifications off, schedule `enabled = true`, and excludes budget resource type name patterns.
 
 **Dependencies:** Task 6.1
 
 **Files likely touched:**
 - `infra/cost_controls.tf`
+- `scripts/test-task6-2-shutdown-schedule-plan-contract.ps1`
 - `infra/compute.tf` (read-only reference; no edits unless a typo is discovered adjacent to work—avoid scope creep)
 
 **Estimated scope:** S (1–2 files)
