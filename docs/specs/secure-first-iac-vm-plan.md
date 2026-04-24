@@ -126,13 +126,13 @@ Runbooks and end-to-end verification
 **Description:** Provision a low-cost Linux VM (`Standard_B1s`) with SSH key authentication only and managed disk defaults.
 
 **Acceptance criteria:**
-- [ ] VM size is `Standard_B1s`.
-- [ ] Password authentication is disabled.
-- [ ] SSH public key authentication is configured.
+- [x] VM size is `Standard_B1s`. - `terraform plan` shows `azurerm_linux_virtual_machine.workload` with `size = "Standard_B1s"`; `scripts/test-task5-linux-vm-baseline.ps1` asserts the same from saved plan JSON.
+- [x] Password authentication is disabled. - Plan shows `disable_password_authentication = true` and no `admin_password`; baseline script asserts planned values and human plan text.
+- [x] SSH public key authentication is configured. - Plan includes `admin_ssh_key` with `username = "install"`; key supplied via `-var vm_admin_ssh_public_key` (input variables: https://developer.hashicorp.com/terraform/language/values/variables).
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra plan`
-- [ ] Manual check: VM auth section shows no password-based login.
+- [x] Run: `terraform -chdir=infra plan` - Executed as `terraform -chdir=infra plan -input=false -refresh=false -lock=false -state="task5-tdd-plan.tfstate"` with valid `vm_admin_ssh_public_key` for non-interactive automation (https://developer.hashicorp.com/terraform/cli/commands/plan#input-false).
+- [x] Manual check: VM auth section shows no password-based login. - Confirmed via plan text and `scripts/test-task5-linux-vm-baseline.ps1` assertions; `scripts/test-task5-ssh-input-contract.ps1` re-run for Task 5.2 SSH variable contract.
 
 **Dependencies:** Task 4
 

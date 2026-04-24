@@ -123,15 +123,15 @@ Task 5.5 run end-to-end verification and bookkeeping
 **Description:** Execute all Task 5 verification commands, record concise evidence, and update plan checkboxes for completion.
 
 **Acceptance criteria:**
-- [ ] Task 5 verification commands pass and are documented.
-- [ ] Task 5 plan checkboxes are updated (`[ ]` -> `[x]`) with one-sentence summaries.
-- [ ] Parent plan Task 5 rows are updated with concise evidence notes.
+- [x] Task 5 verification commands pass and are documented. - Ran `test-task5-linux-vm-baseline.ps1`, `test-task5-ssh-input-contract.ps1`, `terraform fmt -check`, `validate`, and `plan -input=false` with `-var` SSH key; all exit 0 (non-interactive plan per https://developer.hashicorp.com/terraform/cli/commands/plan#input-false).
+- [x] Task 5 plan checkboxes are updated (`[ ]` -> `[x]`) with one-sentence summaries. - Task 5.5 and final checkpoint rows completed in this file with evidence from the same verification run.
+- [x] Parent plan Task 5 rows are updated with concise evidence notes. - `docs/specs/secure-first-iac-vm-plan.md` Task 5 acceptance/verification aligned with plan output (`Standard_B1s`, `disable_password_authentication = true`, no `admin_password`, SSH key block).
 
 **Verification:**
-- [ ] Run: `pwsh -NoProfile -File scripts/test-task5-linux-vm-baseline.ps1`
-- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Run: `terraform -chdir=infra plan -input=false -refresh=false -lock=false -state="task5-tdd-plan.tfstate" -no-color`
+- [x] Run: `pwsh -NoProfile -File scripts/test-task5-linux-vm-baseline.ps1` - Passed (all `[PASS]` assertions including extension-operations guard).
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed.
+- [x] Run: `terraform -chdir=infra validate` - Passed.
+- [x] Run: `terraform -chdir=infra plan -input=false -refresh=false -lock=false -state="task5-tdd-plan.tfstate" -no-color` - Passed with `-var` supplying valid `vm_admin_ssh_public_key`; plan shows `Plan: 9 to add`, `azurerm_linux_virtual_machine.workload`, `size = "Standard_B1s"`, `disable_password_authentication = true`.
 
 **Dependencies:** Task 5.4
 
@@ -142,10 +142,10 @@ Task 5.5 run end-to-end verification and bookkeeping
 **Estimated scope:** XS
 
 ### Checkpoint: Task 5 complete
-- [ ] All Task 5 acceptance criteria are completed with evidence.
-- [ ] Verification evidence is present in Task 5 plan and parent plan.
-- [ ] Scope lock preserved (no Task 6+ implementation started).
-- [ ] Ready for Task 5 code review and git workflow steps.
+- [x] All Task 5 acceptance criteria are completed with evidence. - Subtasks 5.1–5.5 marked complete with one-line evidence; Task 5.5 re-ran full verification suite.
+- [x] Verification evidence is present in Task 5 plan and parent plan. - Task 5.5 verification block and `secure-first-iac-vm-plan.md` Task 5 rows cite concrete command outcomes and plan snippets.
+- [x] Scope lock preserved (no Task 6+ implementation started). - Plan diff remains nine creates (Task 4 network + VM); no auto-shutdown, budget, or CI resources added.
+- [x] Ready for Task 5 code review and git workflow steps. - Scripts and Terraform validated; local `task5-tdd-plan.tfstate` is gitignored (`*.tfstate`).
 
 ## Risks and Mitigations
 | Risk | Impact | Mitigation |
