@@ -110,7 +110,7 @@ Task 5.5 run end-to-end verification and bookkeeping
 
 **Verification:**
 - [x] Run: `pwsh -NoProfile -File scripts/test-task5-linux-vm-baseline.ps1` - Script completed exit code 0 with per-assertion `[PASS]` lines.
-- [x] Manual check: script output clearly reports pass/fail per assertion. - Each criterion emits an explicit `[PASS]` or throws with `Task 5.4 assertion failed` prefix.
+- [x] Manual check: script output clearly reports pass/fail per assertion. - Each criterion emits an explicit `[PASS]` or throws with `Task 5.4 assertion failed` prefix; terraform failure excerpts redact SSH key material and truncate before embedding in errors (saved plans may hold cleartext sensitive values per https://developer.hashicorp.com/terraform/cli/commands/plan#out-filename).
 
 **Dependencies:** Task 5.3
 

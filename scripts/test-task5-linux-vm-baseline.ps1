@@ -8,6 +8,12 @@ the plan binary, decodes it with terraform show -json, and asserts VM size,
 password-disabled SSH-only auth, presence of admin_ssh_key, and NIC wiring to
 azurerm_network_interface.workload per the saved configuration graph.
 
+Saved plan files and captured CLI output can include cleartext sensitive values
+even when terminal UI obscures them; this script stores plans only under a
+unique temp directory, deletes them in a finally block, and redacts excerpts
+embedded in thrown errors. See:
+https://developer.hashicorp.com/terraform/cli/commands/plan#out-filename
+
 Terraform CLI (non-interactive plan):
 https://developer.hashicorp.com/terraform/cli/commands/plan#input-false
 
@@ -19,6 +25,56 @@ https://developer.hashicorp.com/terraform/internals/json-format
 #>
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+function Get-RedactedTerraformOutputExcerpt {
+  <#
+  .SYNOPSIS
+  Redacts OpenSSH public-key material and truncates text for safer error paths.
+
+  .DESCRIPTION
+  Terraform plan and show output can echo variable-derived strings (including
+  SSH public keys). Exception messages should not replay full key blobs into
+  CI logs. Applies conservative regex redaction, then truncates to MaxLength.
+
+  .PARAMETER RawText
+  Raw stdout/stderr captured from terraform.
+
+  .PARAMETER MaxLength
+  Maximum number of characters to return after redaction.
+
+  .OUTPUTS
+  [string] Redacted and possibly truncated excerpt suitable for diagnostics.
+  #>
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RawText,
+
+    [Parameter(Mandatory = $false)]
+    [int]$MaxLength = 6000
+  )
+
+  if ([string]::IsNullOrEmpty($RawText)) {
+    return ""
+  }
+
+  $working = $RawText
+  $working = [regex]::Replace($working, '"public_key"\s*:\s*"[^"]*"', '"public_key":"[REDACTED]"')
+  $working = [regex]::Replace(
+    $working,
+    '(\+\s+public_key\s*=\s")[^"\r\n]*(")',
+    '${1}[REDACTED]${2}'
+  )
+  $working = [regex]::Replace(
+    $working,
+    'ssh-(ed25519|rsa)\s+[^\r\n]+',
+    'ssh-$1 [REDACTED]'
+  )
+
+  if ($working.Length -gt $MaxLength) {
+    return $working.Substring(0, $MaxLength) + "`n... (truncated; max $MaxLength chars)"
+  }
+  return $working
+}
 
 function Get-RepositoryRootPath {
   <#
@@ -87,7 +143,8 @@ function Get-LinuxVmBaselineFromSavedPlan {
   $showArguments = @("show", "-json", $PlanFilePath)
   $showText = & terraform -chdir=infra @showArguments 2>&1 | Out-String
   if ($LASTEXITCODE -ne 0) {
-    throw "terraform show -json failed for plan at '$PlanFilePath'. Output was:`n$showText"
+    $safeDetail = Get-RedactedTerraformOutputExcerpt -RawText $showText
+    throw "terraform show -json failed for plan at '$PlanFilePath'. Redacted output excerpt:`n$safeDetail"
   }
 
   $planObject = $showText | ConvertFrom-Json -Depth 100
@@ -204,7 +261,8 @@ try {
     )
     $planResult = Invoke-TerraformInfraCommand -Arguments $planArguments
     if ($planResult.ExitCode -ne 0) {
-      throw "terraform plan failed. Output was:`n$($planResult.Output)"
+      $safeDetail = Get-RedactedTerraformOutputExcerpt -RawText $planResult.Output
+      throw "terraform plan failed. Redacted output excerpt:`n$safeDetail"
     }
 
     Write-Host "Task 5.4: decoding plan via terraform show -json (machine-readable plan)."
