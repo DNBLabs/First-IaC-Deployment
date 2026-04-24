@@ -16,8 +16,11 @@ resource "azurerm_linux_virtual_machine" "workload" {
   admin_username      = "install"
 
   disable_password_authentication = true
-  network_interface_ids           = [azurerm_network_interface.workload.id]
-  tags                            = local.normalized_required_tags
+  # Least privilege: block extension install/update API paths on this baseline VM
+  # (Task 5 keeps extensions out of scope; re-enable later only if an extension is required).
+  allow_extension_operations = false
+  network_interface_ids      = [azurerm_network_interface.workload.id]
+  tags                       = local.normalized_required_tags
 
   admin_ssh_key {
     username   = "install"
