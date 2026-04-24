@@ -42,11 +42,13 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Verification:**
 - [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.
 - [x] Run: `terraform -chdir=infra validate` - Passed.
+- [x] Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task6-timezone-input-contract.ps1` from repo root - Passed; script asserts invalid `vm_auto_shutdown_timezone` values fail `terraform plan` variable validation, valid `UTC` with the Task 5 contract SSH key passes plan, and `terraform validate` still succeeds.
 
 **Dependencies:** Task 5 complete
 
 **Files likely touched:**
 - `infra/variables.tf`
+- `scripts/test-task6-timezone-input-contract.ps1`
 
 **Estimated scope:** XS
 
