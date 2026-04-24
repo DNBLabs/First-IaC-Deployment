@@ -70,17 +70,17 @@ Task 5.5 run end-to-end verification and bookkeeping
 **Description:** Declare the Linux VM resource wired to Task 4 network with secure auth and baseline compute/storage configuration.
 
 **Acceptance criteria:**
-- [ ] `azurerm_linux_virtual_machine` resource is declared.
-- [ ] VM size is `Standard_B1s`.
-- [ ] Password authentication is disabled.
-- [ ] SSH public key authentication is configured.
-- [ ] VM attaches to `azurerm_network_interface.workload`.
+- [x] `azurerm_linux_virtual_machine` resource is declared. - Added `azurerm_linux_virtual_machine.workload` in `infra/compute.tf` per AzureRM resource docs (raw markdown).
+- [x] VM size is `Standard_B1s`. - `size = "Standard_B1s"` on `azurerm_linux_virtual_machine.workload`.
+- [x] Password authentication is disabled. - `disable_password_authentication = true` with no `admin_password` block.
+- [x] SSH public key authentication is configured. - `admin_ssh_key` uses `username = "install"` and `public_key = var.vm_admin_ssh_public_key`.
+- [x] VM attaches to `azurerm_network_interface.workload`. - `network_interface_ids = [azurerm_network_interface.workload.id]`.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Run: `terraform -chdir=infra plan -input=false`
-- [ ] Manual check: plan VM auth section shows no password-based login path.
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed (after `terraform fmt -recursive`).
+- [x] Run: `terraform -chdir=infra validate` - Passed.
+- [x] Run: `terraform -chdir=infra plan -input=false` - Passed with `-refresh=false -lock=false` and `-var` supplying a valid OpenSSH public key line; plan includes `azurerm_linux_virtual_machine.workload`.
+- [x] Manual check: plan VM auth section shows no password-based login path. - Plan shows `disable_password_authentication = true`, `admin_ssh_key` only, and no `admin_password`.
 
 **Dependencies:** Task 5.2
 
@@ -90,10 +90,10 @@ Task 5.5 run end-to-end verification and bookkeeping
 **Estimated scope:** XS
 
 ### Checkpoint: Task 5 foundation (After Tasks 5.1-5.3)
-- [ ] Inputs are resolved and documented.
-- [ ] Terraform fmt/validate pass.
-- [ ] Plan shows VM baseline with `Standard_B1s` and SSH-only auth.
-- [ ] No Task 6+ resources are introduced.
+- [x] Inputs are resolved and documented. - Task 5.1 decisions remain in spec/plan; `vm_admin_ssh_public_key` contract from Task 5.2.
+- [x] Terraform fmt/validate pass. - Same verification as Task 5.3 checklist.
+- [x] Plan shows VM baseline with `Standard_B1s` and SSH-only auth. - Plan output shows `size = "Standard_B1s"`, SSH key block, and `disable_password_authentication = true`.
+- [x] No Task 6+ resources are introduced. - Diff limited to Task 4 network + new VM resource only.
 
 ### Phase 2: Verification and Completion
 
