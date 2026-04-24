@@ -106,6 +106,7 @@ Task 5.5 run end-to-end verification and bookkeeping
 - [x] Script asserts password auth is disabled. - Asserts `disable_password_authentication` is true, `admin_password` unset, and human plan text has no `+ admin_password` line.
 - [x] Script asserts SSH key block exists. - Asserts `admin_ssh_key` has `username` `install` and non-empty `public_key` in planned values.
 - [x] Script asserts VM NIC attachment to Task 4 NIC path. - Asserts `configuration.root_module` expression for `network_interface_ids` references `azurerm_network_interface.workload` / `.id` (decoded via `terraform show -json` per https://developer.hashicorp.com/terraform/cli/commands/show#json).
+- [x] Script asserts extension operations stay disabled on the baseline VM. - Asserts `planned_values` for the workload VM include `allow_extension_operations` equal to `false` (regression guard aligned with `infra/compute.tf`).
 
 **Verification:**
 - [x] Run: `pwsh -NoProfile -File scripts/test-task5-linux-vm-baseline.ps1` - Script completed exit code 0 with per-assertion `[PASS]` lines.

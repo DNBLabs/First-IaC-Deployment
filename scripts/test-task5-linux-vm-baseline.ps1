@@ -133,6 +133,13 @@ function Assert-LinuxVmBaselineContract {
   }
   Write-Host "[PASS] VM size is Standard_B1s."
 
+  # Regression guard for least-privilege baseline (infra/compute.tf). For new work,
+  # prefer changing Terraform first and watching this script fail (RED) before fixing (GREEN).
+  if ($values.allow_extension_operations -ne $false) {
+    throw "Task 5.4 assertion failed: expected allow_extension_operations = false, found '$($values.allow_extension_operations)'."
+  }
+  Write-Host "[PASS] Extension operations disabled (allow_extension_operations = false)."
+
   if ($values.disable_password_authentication -ne $true) {
     throw "Task 5.4 assertion failed: expected disable_password_authentication = true."
   }
