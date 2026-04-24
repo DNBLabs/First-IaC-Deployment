@@ -91,13 +91,13 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Description:** Execute the spec’s verification commands and capture concise evidence (command + outcome) for plan and optional manual assertions.
 
 **Acceptance criteria:**
-- [ ] `terraform -chdir=infra fmt -check -recursive` passes.
-- [ ] `terraform -chdir=infra validate` passes.
-- [ ] `terraform -chdir=infra plan -input=false` (with required variables) passes; plan text or JSON review confirms `1900`, `UTC` (or overridden value), `notification_settings`/disabled notifications, VM id wiring, and **tags** present as expected.
-- [ ] Manual check: plan does not introduce password auth, public IP, or budget resources.
+- [x] `terraform -chdir=infra fmt -check -recursive` passes. - Exit 0; no files needed reformatting (canonical style per https://developer.hashicorp.com/terraform/cli/commands/fmt `-check` / `-recursive`).
+- [x] `terraform -chdir=infra validate` passes. - Exit 0, `Success! The configuration is valid.` (https://developer.hashicorp.com/terraform/cli/commands/validate).
+- [x] `terraform -chdir=infra plan -input=false` (with required variables) passes; plan text or JSON review confirms `1900`, `UTC` (or overridden value), `notification_settings`/disabled notifications, VM id wiring, and **tags** present as expected. - Exit 0 with `TF_VAR_vm_admin_ssh_public_key` set (non-interactive variable input per https://developer.hashicorp.com/terraform/cli/commands/plan). Plan shows `daily_recurrence_time = "1900"`, `timezone = "UTC"`, `notification_settings.enabled = false`, `virtual_machine_id` on `azurerm_dev_test_global_vm_shutdown_schedule.workload`, and schedule `tags` block with `cost_center` / `environment` / `owner`.
+- [x] Manual check: plan does not introduce password auth, public IP, or budget resources. - VM shows `disable_password_authentication = true`; no `azurerm_public_ip` (or `public_ip_address_id` on NIC) in the plan graph; no budget resource types; `test-task6-2-shutdown-schedule-plan-contract.ps1` still passes as regression guard.
 
 **Verification:**
-- [ ] Run the three command groups above and record one-line outcomes in Task 6.4 / checkpoint.
+- [x] Ran the three command groups above; outcomes recorded in this Task 6.3 section (Task 6.4 will copy summaries to the parent plan only).
 
 **Dependencies:** Task 6.2
 
