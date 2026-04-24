@@ -123,3 +123,23 @@ variable "vm_admin_ssh_public_key" {
   }
 }
 
+# Task 6.1: Azure VM auto-shutdown time zone ID (azurerm_dev_test_global_vm_shutdown_schedule.timezone).
+# Input variable assignment: https://developer.hashicorp.com/terraform/language/values/variables
+# Provider timezone argument references Microsoft-supported display names:
+# https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/dev_test_global_vm_shutdown_schedule.html.markdown
+variable "vm_auto_shutdown_timezone" {
+  description = "Azure Windows-style time zone ID for the daily VM auto-shutdown schedule (Task 6). Lab default UTC is the GMT baseline (no DST). Use IDs accepted by Azure for this field—not POSIX Region/City strings unless verified against the same list linked from the provider resource documentation. Override with -var or TF_VAR_vm_auto_shutdown_timezone per the Terraform variables documentation URL in the comment above this block."
+  type        = string
+  default     = "UTC"
+
+  validation {
+    condition = (
+      trimspace(var.vm_auto_shutdown_timezone) != "" &&
+      var.vm_auto_shutdown_timezone == trimspace(var.vm_auto_shutdown_timezone) &&
+      !can(regex("[\r\n\t]", var.vm_auto_shutdown_timezone)) &&
+      length(var.vm_auto_shutdown_timezone) <= 128
+    )
+    error_message = "vm_auto_shutdown_timezone must be a non-empty, trimmed Azure time zone ID string (no tabs or newlines) and 128 characters or fewer."
+  }
+}
+

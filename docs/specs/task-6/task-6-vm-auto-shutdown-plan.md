@@ -35,13 +35,13 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Description:** Introduce a root-module variable for the Azure time zone ID used by the shutdown schedule, defaulting to **`UTC`** (GMT baseline) with a description that points maintainers to Microsoft’s accepted ID list.
 
 **Acceptance criteria:**
-- [ ] `vm_auto_shutdown_timezone` exists in `infra/variables.tf` with type `string` and default **`UTC`**.
-- [ ] Variable description states GMT lab baseline, that values must be Azure-supported IDs (not arbitrary POSIX strings), and links or names the official list pattern used elsewhere in the spec.
-- [ ] Value is trimmed / non-empty (minimal validation consistent with other variables in this repo).
+- [x] `vm_auto_shutdown_timezone` exists in `infra/variables.tf` with type `string` and default **`UTC`**. - Added `variable "vm_auto_shutdown_timezone"` with `default = "UTC"`.
+- [x] Variable description states GMT lab baseline, that values must be Azure-supported IDs (not arbitrary POSIX strings), and links or names the official list pattern used elsewhere in the spec. - Description references Azure ID rules and cites AzureRM `dev_test_global_vm_shutdown_schedule` raw doc URL; block comments cite Terraform variables + provider doc.
+- [x] Value is trimmed / non-empty (minimal validation consistent with other variables in this repo). - Validation enforces non-empty after trim, no leading/trail space, no tab/newline, max length 128.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
-- [ ] Run: `terraform -chdir=infra validate`
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.
+- [x] Run: `terraform -chdir=infra validate` - Passed.
 
 **Dependencies:** Task 5 complete
 
