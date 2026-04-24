@@ -58,17 +58,17 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Description:** Create `infra/cost_controls.tf` (if absent) and declare **`azurerm_dev_test_global_vm_shutdown_schedule`** wired to the workload VM, with fixed **`1900`** recurrence, **`timezone = var.vm_auto_shutdown_timezone`**, **`tags = local.normalized_required_tags`**, and **`notification_settings { enabled = false }`**.
 
 **Acceptance criteria:**
-- [ ] `infra/cost_controls.tf` exists and contains the shutdown schedule resource.
-- [ ] `virtual_machine_id` references `azurerm_linux_virtual_machine.workload.id`.
-- [ ] `location` matches the resource group / VM region pattern used elsewhere (`azurerm_resource_group.core.location`).
-- [ ] `daily_recurrence_time = "1900"` and schedule `enabled = true` (shutdown policy on; notifications off).
-- [ ] `tags = local.normalized_required_tags` is set.
-- [ ] No `email` or `webhook_url` blocks appear in committed configuration.
+- [x] `infra/cost_controls.tf` exists and contains the shutdown schedule resource. - Added `azurerm_dev_test_global_vm_shutdown_schedule.workload` with file header citing AzureRM resource doc.
+- [x] `virtual_machine_id` references `azurerm_linux_virtual_machine.workload.id`. - Set per provider required argument reference.
+- [x] `location` matches the resource group / VM region pattern used elsewhere (`azurerm_resource_group.core.location`). - Matches `compute.tf` / `network.tf` pattern.
+- [x] `daily_recurrence_time = "1900"` and schedule `enabled = true` (shutdown policy on; notifications off). - Explicit `enabled = true`; `notification_settings { enabled = false }`.
+- [x] `tags = local.normalized_required_tags` is set. - Same mapping as workload VM.
+- [x] No `email` or `webhook_url` blocks appear in committed configuration. - Omitted; plan may still show provider default `time_in_minutes` inside `notification_settings` when notifications are off.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra fmt -check -recursive`
-- [ ] Run: `terraform -chdir=infra validate`
-- [ ] Run: `terraform -chdir=infra plan -input=false` with valid `vm_admin_ssh_public_key` (and any other required vars); plan shows **one** new `azurerm_dev_test_global_vm_shutdown_schedule` (or agreed resource name) and **does not** add Task 7 budget resources.
+- [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.
+- [x] Run: `terraform -chdir=infra validate` - Passed.
+- [x] Run: `terraform -chdir=infra plan -input=false` with valid `vm_admin_ssh_public_key` (and any other required vars); plan shows **one** new `azurerm_dev_test_global_vm_shutdown_schedule` (or agreed resource name) and **does not** add Task 7 budget resources. - Passed using `TF_VAR_vm_admin_ssh_public_key` (non-interactive); plan includes `azurerm_dev_test_global_vm_shutdown_schedule.workload` with `1900`, `UTC`, `notification_settings.enabled = false`, and no budget/consumption resources.
 
 **Dependencies:** Task 6.1
 
@@ -79,9 +79,9 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Estimated scope:** S (1–2 files)
 
 ### Checkpoint: Task 6 infrastructure (After Tasks 6.1–6.2)
-- [ ] `terraform validate` passes with new variable and schedule resource.
-- [ ] `terraform plan` shows shutdown schedule targeting the Task 5 VM only.
-- [ ] No Task 7+ resources appear in the plan delta.
+- [x] `terraform validate` passes with new variable and schedule resource. - Validated after adding `cost_controls.tf`.
+- [x] `terraform plan` shows shutdown schedule targeting the Task 5 VM only. - Plan lists `virtual_machine_id` wired to `azurerm_linux_virtual_machine.workload` (known after apply in fresh plan).
+- [x] No Task 7+ resources appear in the plan delta. - No budget or out-of-scope resource types in plan output.
 
 ### Phase 3: Verification and bookkeeping
 
