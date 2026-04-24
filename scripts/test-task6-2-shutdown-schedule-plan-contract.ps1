@@ -101,6 +101,35 @@ function Invoke-TerraformInfraCommand {
   }
 }
 
+function Assert-TerraformInvocationSucceeded {
+  <#
+  .SYNOPSIS
+  Throws with redacted diagnostics if a terraform invocation exited non-zero.
+
+  .PARAMETER Result
+  Hashtable from Invoke-TerraformInfraCommand.
+
+  .PARAMETER OperationDescription
+  Short label for the error message (e.g. terraform plan).
+
+  .PARAMETER SuccessPhrase
+  Wording after the operation name (default "to succeed"; use "to pass" for validate).
+  #>
+  param(
+    [Parameter(Mandatory = $true)]
+    [hashtable]$Result,
+    [Parameter(Mandatory = $true)]
+    [string]$OperationDescription,
+    [Parameter(Mandatory = $false)]
+    [string]$SuccessPhrase = "to succeed"
+  )
+
+  if ($Result.ExitCode -ne 0) {
+    $redacted = Get-RedactedTerraformDiagnosticsExcerpt -RawText $Result.Output
+    throw "Task 6.2 contract: expected $OperationDescription $SuccessPhrase. Exit code $($Result.ExitCode). Redacted output:`n$redacted"
+  }
+}
+
 function Assert-PlanTextContains {
   <#
   .SYNOPSIS
@@ -129,45 +158,45 @@ function Assert-PlanTextContains {
   }
 }
 
-function Assert-PlanTextExcludesBudgetResources {
+function Assert-PlanTextExcludesTask62ForbiddenSubstrings {
   <#
   .SYNOPSIS
-  Ensures the plan does not introduce Task 7-style consumption budget resources.
+  Rejects Task 7 budget resource name fragments and webhook_url in plan output.
 
   .PARAMETER PlanText
-  Full terraform plan stdout/stderr capture to scan for out-of-scope resource types.
+  Full terraform plan stdout/stderr capture.
   #>
   param(
     [Parameter(Mandatory = $true)]
     [string]$PlanText
   )
 
-  $budgetPatterns = @(
+  $budgetResourceTypeSubstrings = @(
     "azurerm_consumption_budget",
     "azurerm_subscription_budget",
     "azurerm_resource_group_cost_management_export"
   )
-  foreach ($pattern in $budgetPatterns) {
+  foreach ($pattern in $budgetResourceTypeSubstrings) {
     if ($PlanText.IndexOf($pattern, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
       throw "Task 6.2 contract: plan must not include out-of-scope budget resource pattern '$pattern'."
     }
   }
-}
-
-function Assert-PlanTextExcludesShutdownNotificationChannels {
-  <#
-  .SYNOPSIS
-  Ensures the plan does not include webhook_url (Task 6 lab default: no notification endpoints in graph).
-  #>
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$PlanText
-  )
 
   if ($PlanText.IndexOf("webhook_url", [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
     throw "Task 6.2 contract: plan must not include webhook_url (use notification_settings.enabled = false only for this lab; webhooks require secret handling)."
   }
 }
+
+$script:RequiredPlanFragments = @(
+  @{ Substring = "azurerm_dev_test_global_vm_shutdown_schedule.workload"; Label = "shutdown schedule resource address" }
+  @{ Substring = '+ enabled               = true'; Label = "shutdown schedule resource enabled" }
+  @{ Substring = 'daily_recurrence_time = "1900"'; Label = "19:00 HHmm recurrence" }
+  @{ Substring = 'timezone              = "UTC"'; Label = "default UTC timezone (aligned with vm_auto_shutdown_timezone default)" }
+  @{ Substring = "virtual_machine_id"; Label = "virtual_machine_id argument on shutdown schedule" }
+  @{ Substring = "azurerm_linux_virtual_machine.workload"; Label = "workload VM reference in plan graph" }
+  @{ Substring = "notification_settings"; Label = "notification_settings block" }
+  @{ Substring = "+ enabled         = false"; Label = "pre-shutdown notifications disabled inside notification_settings" }
+)
 
 $script:ValidSshPublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuSlvxTWf2H0tLCtLkM3PQWmZAnOEkjBLdyVAKDL43z task5-validation"
 
@@ -184,38 +213,17 @@ try {
     "-state=task62-plan-contract.tfstate",
     "-no-color"
   )
-  if ($planResult.ExitCode -ne 0) {
-    $redacted = Get-RedactedTerraformDiagnosticsExcerpt -RawText $planResult.Output
-    throw "Task 6.2 contract: expected terraform plan to succeed. Exit code $($planResult.ExitCode). Redacted output:`n$redacted"
-  }
+  Assert-TerraformInvocationSucceeded -Result $planResult -OperationDescription "terraform plan"
 
   $planText = $planResult.Output
-
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring "azurerm_dev_test_global_vm_shutdown_schedule.workload" `
-    -AssertionLabel "shutdown schedule resource address"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring '+ enabled               = true' `
-    -AssertionLabel "shutdown schedule resource enabled"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring 'daily_recurrence_time = "1900"' `
-    -AssertionLabel "19:00 HHmm recurrence"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring 'timezone              = "UTC"' `
-    -AssertionLabel "default UTC timezone (aligned with vm_auto_shutdown_timezone default)"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring "virtual_machine_id" `
-    -AssertionLabel "virtual_machine_id argument on shutdown schedule"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring "azurerm_linux_virtual_machine.workload" `
-    -AssertionLabel "workload VM reference in plan graph"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring "notification_settings" `
-    -AssertionLabel "notification_settings block"
-  Assert-PlanTextContains -PlanText $planText -RequiredSubstring "+ enabled         = false" `
-    -AssertionLabel "pre-shutdown notifications disabled inside notification_settings"
-  Assert-PlanTextExcludesBudgetResources -PlanText $planText
-  Assert-PlanTextExcludesShutdownNotificationChannels -PlanText $planText
+  foreach ($fragment in $script:RequiredPlanFragments) {
+    Assert-PlanTextContains -PlanText $planText -RequiredSubstring $fragment.Substring -AssertionLabel $fragment.Label
+  }
+  Assert-PlanTextExcludesTask62ForbiddenSubstrings -PlanText $planText
 
   Write-Host "Task 6.2 test: terraform validate should pass."
   $validateResult = Invoke-TerraformInfraCommand @("validate")
-  if ($validateResult.ExitCode -ne 0) {
-    $redactedValidate = Get-RedactedTerraformDiagnosticsExcerpt -RawText $validateResult.Output
-    throw "Task 6.2 contract: expected terraform validate to pass. Redacted output:`n$redactedValidate"
-  }
+  Assert-TerraformInvocationSucceeded -Result $validateResult -OperationDescription "terraform validate" -SuccessPhrase "to pass"
 }
 finally {
   if ($null -eq $previousTfVar) {
