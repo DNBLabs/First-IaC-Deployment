@@ -4,6 +4,7 @@
 # Terraform state files (can contain sensitive metadata)
 *.tfstate
 *.tfstate.*
+*.tfplan
 
 # Terraform crash logs
 crash.log
