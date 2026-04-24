@@ -37,12 +37,12 @@ Task 6.4 update Task 6 and parent plan checkboxes with evidence
 **Acceptance criteria:**
 - [x] `vm_auto_shutdown_timezone` exists in `infra/variables.tf` with type `string` and default **`UTC`**. - Added `variable "vm_auto_shutdown_timezone"` with `default = "UTC"`.
 - [x] Variable description states GMT lab baseline, that values must be Azure-supported IDs (not arbitrary POSIX strings), and links or names the official list pattern used elsewhere in the spec. - Description references Azure ID rules and cites AzureRM `dev_test_global_vm_shutdown_schedule` raw doc URL; block comments cite Terraform variables + provider doc.
-- [x] Value is trimmed / non-empty (minimal validation consistent with other variables in this repo). - Validation enforces non-empty after trim, no leading/trail space, no tab/newline, max length 128.
+- [x] Value is trimmed / non-empty (minimal validation consistent with other variables in this repo). - Validation enforces non-empty after trim, no leading/trail space, no tab/newline/NUL, max length 128, and rejects obvious PEM/private-key marker substrings; variable description states non-secret identifier only.
 
 **Verification:**
 - [x] Run: `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.
 - [x] Run: `terraform -chdir=infra validate` - Passed.
-- [x] Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task6-timezone-input-contract.ps1` from repo root - Passed; script asserts invalid `vm_auto_shutdown_timezone` values fail `terraform plan` variable validation, valid `UTC` with the Task 5 contract SSH key passes plan, and `terraform validate` still succeeds.
+- [x] Run: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task6-timezone-input-contract.ps1` from repo root - Passed; script asserts invalid `vm_auto_shutdown_timezone` values fail `terraform plan` variable validation (including PEM-marker and NUL-byte cases), valid `UTC` with the Task 5 contract SSH key passes plan, and `terraform validate` still succeeds.
 
 **Dependencies:** Task 5 complete
 
