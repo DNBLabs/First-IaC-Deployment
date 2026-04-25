@@ -181,7 +181,7 @@ Runbooks and end-to-end verification
 - `infra/cost_controls.tf`
 - `infra/variables.tf`
 - `docs/specs/task-7/task-7-budget-alerts-spec.md`
-- `docs/specs/task-7/task-7-budget-alerts-plan.md` (implementation plan; created when Task 7 is planned)
+- `docs/specs/task-7/task-7-budget-alerts-plan.md` (implementation plan; sub-tasks 7.1–7.5)
 
 **Estimated scope:** S (Terraform root module edits); XS (Task 7 spec/plan under `docs/specs/task-7/`).
 

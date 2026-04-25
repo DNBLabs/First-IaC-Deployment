@@ -76,7 +76,7 @@ terraform -chdir=infra plan -input=false -refresh=false -lock=false -state="task
 | `infra/variables.tf` | New variables: budget amount, time window boundaries as required by provider, threshold/notification tuning, **no** committed secret literals. |
 | `infra/main.tf` | Read-only reference for `locals` / naming unless a small adjacent change is unavoidable—prefer keeping budget wiring in `cost_controls.tf` and variables in `variables.tf`. |
 | `docs/specs/task-7/task-7-budget-alerts-spec.md` | This document (source of truth for Task 7). |
-| `docs/specs/task-7/task-7-budget-alerts-plan.md` | **To be added in the planning step** (sub-tasks, verification, evidence)—not required to exist before the human approves this spec. |
+| `docs/specs/task-7/task-7-budget-alerts-plan.md` | Implementation plan: sub-tasks **7.1**–**7.5**, verification commands, contract script, evidence checklists (Task 7 scope only). |
 
 **Out of scope for Task 7**
 
@@ -158,8 +158,26 @@ resource "azurerm_consumption_budget_resource_group" "lab" {
 5. Governance metadata is reflected via **filters and/or naming** consistent with `local.normalized_required_tags` / `local.deployment_name_prefix` (exact mechanism recorded in the Task 7 implementation plan once the provider schema is verified at coding time).
 6. **Task 8+** work items do not appear in the Task 7 plan or branch scope.
 
-## Open Questions
+## Decisions (golden standard)
 
-1. **Exact default `amount` and thresholds** for the lab subscription (currency and noise tolerance)—confirm with the human owner before implementation.
-2. **`time_period.start_date` / `end_date`:** choose a stable strategy (fixed variable vs. `time_rotating` / automation) so `terraform plan` remains predictable in CI without manual monthly edits.
-3. Whether to add an **`azurerm_monitor_action_group`** in the same task vs. rely solely on **`contact_roles`** for the first vertical slice—decision belongs in the implementation plan after reviewing org notification policy.
+These resolve the former open questions so implementation can proceed without blocking on ad hoc owner polls. Operators in shared or production subscriptions should still override defaults via variables.
+
+### 1. Default monthly `amount` and notification thresholds
+
+- **`amount` (default):** **50** — interpreted in the **subscription’s billing currency** (Azure behavior for consumption budgets). Rationale: a single **Standard_B1s**–class lab plus modest networking and monitoring artifacts rarely needs more headroom for learning; **50** catches “left a VM SKU up” mistakes early without pretending to be a production FinOps model. Teams with higher baseline spend set `budget_monthly_amount` explicitly (for example **100** or **200** for multi-resource labs).
+- **Threshold pattern (two notifications, minimal noise):**
+  - **Forecast early warning:** `threshold_type = "Forecasted"`, `threshold = 80`, `operator = "GreaterThan"` — aligns with common FinOps “warn before the month is committed” practice.
+  - **Actual at cap:** `threshold_type = "Actual"` (or omit where provider default is Actual), `threshold = 100`, `operator = "GreaterThan"` — fires when spend has crossed the budget amount for the grain.
+- **Currency:** Do not hardcode a currency symbol in Terraform; document in variable descriptions that the numeric **`amount`** is in the **subscription billing currency**.
+
+### 2. `time_period.start_date` and `end_date` (stable, CI-friendly)
+
+- **`end_date`:** **Omit** (leave unset / `null` if the provider supports absence) so the budget window stays **open-ended** per [provider `time_period` schema](https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/consumption_budget_resource_group.html.markdown) (`end_date` optional). Avoids annual Terraform edits to extend a fixed end.
+- **`start_date`:** Use a **required variable** `budget_time_period_start` with a **pinned default** in `variables.tf` — for example **`2026-01-01T00:00:00Z`** (ISO 8601, first day of month). Rationale: **no** `timestamp()`, **`time_rotating`**, or “current month” locals that would **change every plan** and force budget replacement in CI.
+- **Azure constraint:** Consumption budgets typically expect **`start_date` on the first day of a month** in UTC. If apply fails because the default is too far in the past or future for the tenant’s API rules, the operator sets `TF_VAR_budget_time_period_start` once to an acceptable first-of-month value; that remains stable until a deliberate rotation.
+- **Explicit non-choice:** Do **not** use `time_rotating` or dynamic month calculation for this lab module — predictability and reviewable diffs beat automatic rolling windows here.
+
+### 3. Action group vs `contact_roles` for the first vertical slice
+
+- **Task 7 default:** **No** `azurerm_monitor_action_group` in-repo for the first slice. Use **`contact_roles`** only — default **`["Owner"]`** — so notifications reach subscription RBAC owners without new resources, secrets, or webhook URLs. Satisfies the provider rule that at least one of `contact_emails`, `contact_groups`, or `contact_roles` is set, while keeping git free of personal emails.
+- **Golden standard for later hardening (out of scope for Task 7 unless the plan explicitly adds it):** introduce an **`azurerm_monitor_action_group`** and pass its ID via **`contact_groups`** (from a variable or a resource managed in a secure pipeline), plus optional **`contact_emails`** supplied only via **sensitive** variables or external secret stores — that is the production-typical pattern for paging, routing, and audit.
