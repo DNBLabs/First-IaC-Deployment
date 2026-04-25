@@ -118,14 +118,15 @@ Task 6 complete (cost_controls.tf + shutdown schedule)
 
 **Acceptance criteria:**
 
-- [ ] **`terraform -chdir=infra fmt -check -recursive`** exits **0** (run **`terraform fmt -recursive`** first if check fails).
-- [ ] **`terraform -chdir=infra validate`** exits **0**.
-- [ ] **`terraform -chdir=infra plan -input=false`** exits **0** with valid **`TF_VAR_vm_admin_ssh_public_key`**; plan includes **`azurerm_consumption_budget_resource_group`** (or current provider type string) and **`Monthly`** / **`azurerm_resource_group.core`** wiring; no Task 8+ files appear in the change set for this branch.
+- [x] **`terraform -chdir=infra fmt -check -recursive`** exits **0** (run **`terraform fmt -recursive`** first if check fails). - Passed (`0`) on the Task 7.2 branch state.
+- [x] **`terraform -chdir=infra validate`** exits **0**. - Passed with `Success! The configuration is valid.`.
+- [x] **`terraform -chdir=infra plan -input=false`** exits **0** with valid **`TF_VAR_vm_admin_ssh_public_key`**; plan includes **`azurerm_consumption_budget_resource_group`** (or current provider type string) and **`Monthly`** / **`azurerm_resource_group.core`** wiring; no Task 8+ files appear in the change set for this branch. - Passed using `TF_VAR_vm_admin_ssh_public_key` env var and non-interactive flags (`-refresh=false -lock=false -no-color`); plan includes `azurerm_consumption_budget_resource_group.core`, `time_grain = "Monthly"`, and `resource_group_id` wired to `azurerm_resource_group.core`; branch change set remains Task 7 docs/infra/scripts only (no Task 8+ workflow files).
 
 **Verification:**
 
-- [ ] Disposable state variant (optional, automation parity):  
-  `terraform -chdir=infra plan -input=false -refresh=false -lock=false -state="task7-plan.tfstate" -no-color`
+- [x] Disposable state variant (optional, automation parity):  
+  `terraform -chdir=infra plan -input=false -refresh=false -lock=false -state="task7-plan.tfstate" -no-color`  
+  Executed equivalent non-interactive plan without `-state` because current Terraform warns `-state` is deprecated for local backend usage; command used: `terraform -chdir=infra plan -input=false -refresh=false -lock=false -no-color`.
 
 **Dependencies:** Task 7.2
 
@@ -143,13 +144,13 @@ Task 6 complete (cost_controls.tf + shutdown schedule)
 
 **Acceptance criteria:**
 
-- [ ] Script runs non-interactively with **`TF_VAR_vm_admin_ssh_public_key`** set (document test key sourcing in script comment: same contract as Task 5–6 tests).
-- [ ] Assertions fail if budget resource missing, **`Monthly`** missing, or shutdown schedule / **`1900`** / notification-off signals missing (Task 6 regression).
-- [ ] Script header documents purpose, spec path, Terraform plan **`input=false`** link, and provider doc URL.
+- [x] Script runs non-interactively with **`TF_VAR_vm_admin_ssh_public_key`** set (document test key sourcing in script comment: same contract as Task 5–6 tests). - Added `scripts/test-task7-budget-plan-contract.ps1`; script sets/restores `TF_VAR_vm_admin_ssh_public_key` internally and runs `terraform -chdir=infra plan -input=false -refresh=false -lock=false -no-color`.
+- [x] Assertions fail if budget resource missing, **`Monthly`** missing, or shutdown schedule / **`1900`** / notification-off signals missing (Task 6 regression). - Script asserts exactly one budget resource, required Monthly/time_period/notification/filter fragments, and Task 6 shutdown schedule fragments (`1900`, notifications disabled).
+- [x] Script header documents purpose, spec path, Terraform plan **`input=false`** link, and provider doc URL. - Header includes Task 7.4 purpose, spec path, Terraform plan link, and AzureRM budget resource doc URL.
 
 **Verification:**
 
-- [ ] `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task7-budget-plan-contract.ps1` from repo root exits **0**.
+- [x] `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task7-budget-plan-contract.ps1` from repo root exits **0**. - Passed locally on the Task 7 branch; script now also rejects secret-like literal patterns in plan output (token/key markers) in addition to redacted diagnostics.
 
 **Dependencies:** Task 7.3
 
