@@ -79,18 +79,20 @@ Task 6 complete (cost_controls.tf + shutdown schedule)
 
 **Acceptance criteria:**
 
-- [ ] Resource name is stable and traceable (e.g. **`azurerm_consumption_budget_resource_group.lab`** or **`core`**); Terraform **`name`** argument uses **`"${local.deployment_name_prefix}-budget"`** or equivalent per spec example.
-- [ ] **`resource_group_id = azurerm_resource_group.core.id`**.
-- [ ] **`amount = var.budget_monthly_amount`**, **`time_grain = "Monthly"`**.
-- [ ] **`time_period { start_date = var.budget_time_period_start }`** without **`end_date`** when provider supports omission; otherwise document the smallest compliant workaround in Task 7.3 evidence.
-- [ ] Two **`notification`** blocks: forecast (**`threshold_type = "Forecasted"`**, **`operator = "GreaterThan"`**, threshold from forecast variable) and actual (**`threshold_type = "Actual"`** or explicit per doc, **`operator = "GreaterThan"`**, threshold from actual variable); each sets **`contact_roles`** and does not leave all contact channels empty.
-- [ ] **`filter { tag { ... } }`** present using **`local.normalized_required_tags`** (e.g. **`environment`**).
-- [ ] **`azurerm_dev_test_global_vm_shutdown_schedule.workload`** remains present and unchanged in behavior (additive Task 7).
+- [x] Resource name is stable and traceable (e.g. **`azurerm_consumption_budget_resource_group.lab`** or **`core`**); Terraform **`name`** argument uses **`"${local.deployment_name_prefix}-budget"`** or equivalent per spec example. - `azurerm_consumption_budget_resource_group.core` with `name = "${local.deployment_name_prefix}-budget"`.
+- [x] **`resource_group_id = azurerm_resource_group.core.id`**. - Set per provider required argument.
+- [x] **`amount = var.budget_monthly_amount`**, **`time_grain = "Monthly"`**. - Wired to Task 7.1 variables / literal `Monthly`.
+- [x] **`time_period { start_date = var.budget_time_period_start }`** without **`end_date`** when provider supports omission; otherwise document the smallest compliant workaround in Task 7.3 evidence. - Only `start_date` set in HCL; plan shows `end_date = (known after apply)` (provider-computed when omitted).
+- [x] Two **`notification`** blocks: forecast (**`threshold_type = "Forecasted"`**, **`operator = "GreaterThan"`**, threshold from forecast variable) and actual (**`threshold_type = "Actual"`** or explicit per doc, **`operator = "GreaterThan"`**, threshold from actual variable); each sets **`contact_roles`** and does not leave all contact channels empty. - Forecast 80 / Actual 100 with `contact_roles = var.budget_notification_contact_roles`.
+- [x] **`filter { tag { ... } }`** present using **`local.normalized_required_tags`** (e.g. **`environment`**). - `tag { name = "environment" values = [local.normalized_required_tags.environment] }`.
+- [x] **`azurerm_dev_test_global_vm_shutdown_schedule.workload`** remains present and unchanged in behavior (additive Task 7). - Same resource block retained; plan still includes shutdown schedule.
 
 **Verification:**
 
-- [ ] `terraform -chdir=infra fmt -check -recursive`
-- [ ] `terraform -chdir=infra validate`
+- [x] `terraform -chdir=infra fmt -check -recursive` - Passed after `terraform fmt -recursive`.
+- [x] `terraform -chdir=infra validate` - Passed.
+- [x] `terraform -chdir=infra plan -input=false -refresh=false -lock=false` with `TF_VAR_vm_admin_ssh_public_key` set (non-interactive) - Passed; plan includes new `azurerm_consumption_budget_resource_group.core` (`secureiac-dev-budget`, Monthly, both notifications, environment tag filter) and existing `azurerm_dev_test_global_vm_shutdown_schedule.workload` (Task 7.2 smoke, not a substitute for full Task 7.3 evidence log).
+- [x] `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\test-task7-2-budget-resource-plan-contract.ps1` from repo root - RED→GREEN: first failed on expected missing resource address literal `azurerm_consumption_budget_resource_group.core`, then passed after renaming the resource address from `.lab` to `.core`; asserts Monthly/amount/time_period/filter/notifications, explicit empty `contact_emails`/`contact_groups`, rejects webhook/URL patterns, and keeps Task 6 schedule regression safety.
 
 **Dependencies:** Task 7.1
 
@@ -104,8 +106,8 @@ Task 6 complete (cost_controls.tf + shutdown schedule)
 
 ### Checkpoint: After Tasks 7.1–7.2
 
-- [ ] `terraform -chdir=infra validate` exits **0**.
-- [ ] `terraform -chdir=infra plan -input=false` (with **`TF_VAR_vm_admin_ssh_public_key`** and any new required vars) shows **exactly one** new consumption budget resource for the resource group and **still** shows the Task 6 shutdown schedule (no removal).
+- [x] `terraform -chdir=infra validate` exits **0**. - Validated after adding `azurerm_consumption_budget_resource_group.core`.
+- [x] `terraform -chdir=infra plan -input=false` (with **`TF_VAR_vm_admin_ssh_public_key`** and any new required vars) shows **exactly one** new consumption budget resource for the resource group and **still** shows the Task 6 shutdown schedule (no removal). - Plan on fresh/disposable state shows `azurerm_consumption_budget_resource_group.core` plus `azurerm_dev_test_global_vm_shutdown_schedule.workload` (full stack may show other creates depending on state file).
 - [ ] Human reviewer satisfied with variable defaults for their subscription (shared subs: raise **`budget_monthly_amount`** or thresholds via `-var` / **`TF_VAR_*`** per spec “Ask first” boundaries).
 
 ---
