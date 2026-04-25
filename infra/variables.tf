@@ -1,6 +1,11 @@
 /*
 Task 1 baseline input variables.
-These are non-secret placeholders for future tasks and are intentionally minimal.
+
+Non-secret placeholders for later tasks; Task 6 adds VM shutdown timezone; Task 7.1 adds
+consumption budget inputs (amount, budget window start, notification thresholds, contact_roles).
+Terraform input variable semantics (type, default, validation):
+https://developer.hashicorp.com/terraform/language/values/variables
+https://developer.hashicorp.com/terraform/language/values/variables#custom-validation-rules
 */
 variable "project_name" {
   description = "Short project identifier used in naming conventions."
@@ -144,6 +149,94 @@ variable "vm_auto_shutdown_timezone" {
       length(var.vm_auto_shutdown_timezone) <= 128
     )
     error_message = "vm_auto_shutdown_timezone must be a non-empty, trimmed Azure time zone ID string (no tabs, newlines, or NUL bytes; no PEM or private-key markers), 128 characters or fewer."
+  }
+}
+
+# Task 7.1: Resource group consumption budget inputs (azurerm_consumption_budget_resource_group).
+# Lab spec and defaults: docs/specs/task-7/task-7-budget-alerts-spec.md (Decisions — golden standard).
+# Provider time_period.start_date / notification arguments:
+# https://raw.githubusercontent.com/hashicorp/terraform-provider-azurerm/main/website/docs/r/consumption_budget_resource_group.html.markdown
+
+variable "budget_monthly_amount" {
+  description = "Monthly consumption budget cap for the Task 7 budget scoped to the core resource group. Numeric amount is interpreted in the Azure subscription billing currency (platform behavior; do not hardcode a currency symbol). Lab default 50 suits a small B1s-style footprint; raise for multi-resource labs or shared subscriptions. Assign with -var or TF_VAR_budget_monthly_amount per https://developer.hashicorp.com/terraform/language/values/variables ."
+  type        = number
+  default     = 50
+
+  validation {
+    condition = (
+      var.budget_monthly_amount > 0 &&
+      var.budget_monthly_amount <= 1e12
+    )
+    error_message = "budget_monthly_amount must be greater than zero and at most 1e12 (guards mistaken or hostile huge numeric inputs at the Terraform boundary)."
+  }
+}
+
+variable "budget_time_period_start" {
+  description = "ISO 8601 start_date passed to azurerm_consumption_budget_resource_group.time_period (Task 7). Azure expects a first-of-month boundary in typical consumption budget flows; provider documents the string as ISO 8601 (see Task 7.1 provider URL in the comment above variable budget_monthly_amount). Pinned default keeps terraform plan stable (no rotating timestamps). If apply rejects the value for your tenant, override once with TF_VAR_budget_time_period_start per https://developer.hashicorp.com/terraform/language/values/variables ."
+  type        = string
+  default     = "2026-01-01T00:00:00Z"
+
+  validation {
+    condition = (
+      trimspace(var.budget_time_period_start) != "" &&
+      var.budget_time_period_start == trimspace(var.budget_time_period_start) &&
+      length(var.budget_time_period_start) <= 64 &&
+      !can(regex("[\r\n\t]", var.budget_time_period_start)) &&
+      (
+        can(regex("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$", var.budget_time_period_start)) ||
+        can(regex("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", var.budget_time_period_start))
+      )
+    )
+    error_message = "budget_time_period_start must be a non-empty trimmed ISO 8601 date or UTC datetime (YYYY-MM-DD or YYYY-MM-DDThh:mm:ssZ), at most 64 characters, with no embedded tabs or newlines."
+  }
+}
+
+variable "budget_forecast_notification_threshold_percent" {
+  description = "Notification threshold percentage for Forecasted spend on the Task 7 budget (maps to notification.threshold when threshold_type is Forecasted per AzureRM consumption budget resource documentation). Lab default 80 for early warning before the month is fully committed."
+  type        = number
+  default     = 80
+
+  validation {
+    condition = (
+      var.budget_forecast_notification_threshold_percent > 0 &&
+      var.budget_forecast_notification_threshold_percent <= 100
+    )
+    error_message = "budget_forecast_notification_threshold_percent must be greater than 0 and at most 100."
+  }
+}
+
+variable "budget_actual_notification_threshold_percent" {
+  description = "Notification threshold percentage for Actual spend on the Task 7 budget (maps to notification.threshold when threshold_type is Actual per AzureRM consumption budget resource documentation). Lab default 100 so the alert reflects having reached the configured monthly cap."
+  type        = number
+  default     = 100
+
+  validation {
+    condition = (
+      var.budget_actual_notification_threshold_percent > 0 &&
+      var.budget_actual_notification_threshold_percent <= 100
+    )
+    error_message = "budget_actual_notification_threshold_percent must be greater than 0 and at most 100."
+  }
+}
+
+variable "budget_notification_contact_roles" {
+  description = "RBAC role names Azure uses for budget notifications when contact_emails and contact_groups are not set (Task 7 lab default: Owner only—no hardcoded emails in git). Override only with non-secret role identifiers; use azurerm_monitor_action_group plus contact_groups in a follow-on change if org policy requires action groups. Values are validated as simple role-name tokens (no @, control characters, or oversized strings) so this boundary cannot carry email addresses or multiline payloads. Input variable assignment: https://developer.hashicorp.com/terraform/language/values/variables ."
+  type        = list(string)
+  default     = ["Owner"]
+
+  validation {
+    condition = (
+      length(var.budget_notification_contact_roles) > 0 &&
+      length(var.budget_notification_contact_roles) <= 32 &&
+      alltrue([
+        for r in var.budget_notification_contact_roles :
+        trimspace(r) != "" &&
+        length(r) <= 128 &&
+        !can(regex("[\r\n\t\u0000]", r)) &&
+        !strcontains(r, "@")
+      ])
+    )
+    error_message = "budget_notification_contact_roles must be a non-empty list (at most 32 entries) of role name strings without @, control characters, or embedded tabs/newlines; each entry must be 128 characters or fewer."
   }
 }
 
