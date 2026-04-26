@@ -167,13 +167,13 @@ Runbooks and end-to-end verification
 **Spec (source of truth for implementation):** `docs/specs/task-7/task-7-budget-alerts-spec.md`
 
 **Acceptance criteria:**
-- [ ] Budget resource is defined with monthly scope.
-- [ ] Threshold and notification recipient variables are configurable.
-- [ ] Tags/metadata support ownership tracking.
+- [x] Budget resource is defined with monthly scope. - Added `azurerm_consumption_budget_resource_group.core` in `infra/cost_controls.tf` with `time_grain = "Monthly"` and scope `azurerm_resource_group.core.id`.
+- [x] Threshold and notification recipient variables are configurable. - Added Task 7.1 variables in `infra/variables.tf` for budget amount/start date/forecast+actual thresholds/contact roles with validation; notifications wired from those variables.
+- [x] Tags/metadata support ownership tracking. - Added budget `filter { tag { name = "environment" values = [local.normalized_required_tags.environment] } }` aligned to governance tags.
 
 **Verification:**
-- [ ] Run: `terraform -chdir=infra plan`
-- [ ] Manual check: plan includes budget and alert threshold.
+- [x] Run: `terraform -chdir=infra plan` - Non-interactive `terraform -chdir=infra plan -input=false -refresh=false -lock=false -no-color` with `TF_VAR_vm_admin_ssh_public_key` passed; command exits 0 and includes budget resource.
+- [x] Manual check: plan includes budget and alert threshold. - Confirmed `azurerm_consumption_budget_resource_group.core` with `Monthly`, `start_date`, forecast/actual notifications (`80`/`100`, `GreaterThan`, `Forecasted`/`Actual`, `contact_roles` Owner), plus Task 6 schedule unchanged.
 
 **Dependencies:** Task 3
 
@@ -186,9 +186,9 @@ Runbooks and end-to-end verification
 **Estimated scope:** S (Terraform root module edits); XS (Task 7 spec/plan under `docs/specs/task-7/`).
 
 ### Checkpoint: Core Infrastructure Safety (After Tasks 5-7)
-- [ ] `terraform -chdir=infra validate` passes
-- [ ] Plan includes VM + shutdown + budget resources
-- [ ] No scanner-critical anti-patterns are visible before CI integration
+- [x] `terraform -chdir=infra validate` passes
+- [x] Plan includes VM + shutdown + budget resources
+- [x] No scanner-critical anti-patterns are visible before CI integration
 
 ### Phase 3: CI/CD and Security Gates
 

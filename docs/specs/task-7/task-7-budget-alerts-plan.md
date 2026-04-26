@@ -169,13 +169,13 @@ Task 6 complete (cost_controls.tf + shutdown schedule)
 
 **Acceptance criteria:**
 
-- [ ] All Task **7.1**–**7.4** checklists in this document updated to **`[x]`** with concise evidence strings.
-- [ ] Parent plan Task **7** acceptance criteria and verification reflect fmt / validate / plan / contract script outcomes.
-- [ ] **Checkpoint “After Tasks 5–7”** in parent plan: only update if your evidence completes that checkpoint; do **not** mark Task 8+ items.
+- [x] All Task **7.1**–**7.4** checklists in this document updated to **`[x]`** with concise evidence strings. - Verified each sub-task section now contains completed acceptance and verification evidence.
+- [x] Parent plan Task **7** acceptance criteria and verification reflect fmt / validate / plan / contract script outcomes. - Updated `docs/specs/secure-first-iac-vm-plan.md` Task 7 block with completed acceptance bullets and command/manual verification evidence.
+- [x] **Checkpoint “After Tasks 5–7”** in parent plan: only update if your evidence completes that checkpoint; do **not** mark Task 8+ items. - Updated only the checkpoint rows under “After Tasks 5-7”; left Task 8+ sections untouched.
 
 **Verification:**
 
-- [ ] Grep confirms no **`task-8`** / **`Task 8`** edits in files touched by this task unless a typo fix is unavoidable in a shared line (avoid).
+- [x] Grep confirms no **`task-8`** / **`Task 8`** edits in files touched by this task unless a typo fix is unavoidable in a shared line (avoid). - Verified via diff-scope grep after Task 7.5 edits; no Task 8 line content changes.
 
 **Dependencies:** Task 7.4
 
@@ -190,9 +190,9 @@ Task 6 complete (cost_controls.tf + shutdown schedule)
 
 ### Checkpoint: Task 7 complete
 
-- [ ] Spec success criteria **1–6** in `task-7-budget-alerts-spec.md` are satisfied.
-- [ ] No Task **8+** scope in branch diff narrative.
-- [ ] Ready for human PR review.
+- [x] Spec success criteria **1–6** in `task-7-budget-alerts-spec.md` are satisfied. - Evidence captured across Task 7.1–7.4 verification logs (fmt/validate/plan + contract scripts) and Task 7.5 parent-plan sync.
+- [x] No Task **8+** scope in branch diff narrative. - Branch changes remain in Task 7 docs/infra/scripts only; no CI workflow or Task 8/9 implementation files changed.
+- [x] Ready for human PR review. - Task 7 checklist and parent Task 7 acceptance/verification are synchronized and complete.
 
 ## Risks and Mitigations
 
