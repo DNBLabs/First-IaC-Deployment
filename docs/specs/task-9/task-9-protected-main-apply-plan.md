@@ -99,16 +99,17 @@ Task 9.4 bookkeeping (Task 9 rows + checkpoints only)
 
 ## Task 9.3: Verify gate + apply execution path in CI
 **Description:** Trigger a `main` workflow run and confirm the apply workflow is blocked until environment approval, then confirm post-approval execution reaches Azure login and apply step.
+**Status:** [x] Completed — Verified with run `24962952706` that `terraform-apply` waits for `production` environment approval, then proceeds with successful `Azure Login (OIDC)` and reaches `Terraform Apply`, which fails for a runtime Terraform input issue (`vm_admin_ssh_public_key` missing) rather than gating/auth wiring.
 
 **Acceptance criteria:**
-- [ ] A `terraform-apply.yml` run is created from a `main` push.
-- [ ] Workflow run shows environment approval gate before apply execution.
-- [ ] After approval, job proceeds and Azure OIDC login succeeds.
-- [ ] Apply step starts successfully (or fails only on Terraform/runtime factors beyond gating/auth wiring).
+- [x] A `terraform-apply.yml` run is created from a `main` push.
+- [x] Workflow run shows environment approval gate before apply execution.
+- [x] After approval, job proceeds and Azure OIDC login succeeds.
+- [x] Apply step starts successfully (or fails only on Terraform/runtime factors beyond gating/auth wiring).
 
 **Verification:**
-- [ ] Capture workflow run URL and gate screenshot/log evidence.
-- [ ] Record step-level result for Azure Login and Terraform Apply.
+- [x] Capture workflow run URL and gate screenshot/log evidence.
+- [x] Record step-level result for Azure Login and Terraform Apply.
 
 **Dependencies:** Task 9.2
 
@@ -121,14 +122,15 @@ Task 9.4 bookkeeping (Task 9 rows + checkpoints only)
 
 ## Task 9.4: Bookkeeping - Task 9 rows only
 **Description:** Update Task 9 checkboxes/evidence in this file and parent plan Task 9 rows. Do not mark Task 10+ rows.
+**Status:** [x] Completed — Synced Task 9 completion evidence into this Task 9 plan and the parent plan Task 9 section using run `24962952706` (environment gate observed, OIDC login succeeded post-approval, Terraform Apply reached and failed only on runtime input), with no Task 10+ edits.
 
 **Acceptance criteria:**
-- [ ] Task 9.1-9.3 rows in this plan are `[x]` with concise evidence.
-- [ ] Parent plan Task 9 acceptance criteria and verification rows are updated.
-- [ ] Task 10+ rows remain untouched.
+- [x] Task 9.1-9.3 rows in this plan are `[x]` with concise evidence.
+- [x] Parent plan Task 9 acceptance criteria and verification rows are updated.
+- [x] Task 10+ rows remain untouched.
 
 **Verification:**
-- [ ] Diff review confirms no edits in Task 10+ sections.
+- [x] Diff review confirms no edits in Task 10+ sections.
 
 **Dependencies:** Task 9.3
 
@@ -141,10 +143,10 @@ Task 9.4 bookkeeping (Task 9 rows + checkpoints only)
 ---
 
 ### Checkpoint: Task 9 complete
-- [ ] Task 9 acceptance criteria in parent plan are fully satisfied.
-- [ ] Environment approval gate evidence is captured at least once.
-- [ ] OIDC-authenticated apply execution path is verified.
-- [ ] No Task 10+ implementation started.
+- [x] Task 9 acceptance criteria in parent plan are fully satisfied.
+- [x] Environment approval gate evidence is captured at least once.
+- [x] OIDC-authenticated apply execution path is verified.
+- [x] No Task 10+ implementation started.
 
 ## Risks and Mitigations
 

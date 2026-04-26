@@ -213,13 +213,13 @@ Runbooks and end-to-end verification
 **Description:** Create a separate apply workflow that runs on merge to `main`, requires environment approval, and uses OIDC auth.
 
 **Acceptance criteria:**
-- [ ] Workflow triggers only on `main` merges.
-- [ ] Protected environment approval is required before apply.
-- [ ] Azure login uses OIDC, not client secret.
+- [x] Workflow triggers only on `main` merges. - Verified `Terraform Apply` run `24962952706` on `main` via `.github/workflows/terraform-apply.yml` push trigger restricted to `main`.
+- [x] Protected environment approval is required before apply. - Verified run enters `waiting` state until `production` environment approval before job execution.
+- [x] Azure login uses OIDC, not client secret. - Verified `Azure Login (OIDC)` step (`azure/login@v3`) succeeds using federated token subject `repo:DNBLabs/First-IaC-Deployment:environment:production`.
 
 **Verification:**
-- [ ] Merge test PR to `main` and confirm approval gate halts apply
-- [ ] Approve and verify apply step starts successfully
+- [x] Merge test PR to `main` and confirm approval gate halts apply - Equivalent main-triggered validation captured in run `24962952706` showing `waiting` gate before approval.
+- [x] Approve and verify apply step starts successfully - After approval in run `24962952706`, `Azure Login (OIDC)` succeeded and `Terraform Apply` step started (runtime failed on missing `vm_admin_ssh_public_key`, confirming post-gate execution path).
 
 **Dependencies:** Task 8 and OIDC identity setup
 
@@ -232,7 +232,7 @@ Runbooks and end-to-end verification
 ### Checkpoint: CI/CD Gates (After Tasks 8-9)
 - [ ] CI static checks fail on broken infra code
 - [ ] CI static checks pass on valid infra code
-- [ ] Main apply workflow is gated and authenticated via OIDC
+- [x] Main apply workflow is gated and authenticated via OIDC
 
 ### Phase 4: Documentation and Operational Readiness
 
