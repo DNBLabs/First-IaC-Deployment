@@ -5,7 +5,13 @@ This file intentionally contains no deployable resources.
 locals {
   deployment_name_prefix      = "${var.project_name}-${var.environment_name}"
   normalized_allowed_ssh_cidr = lower(trimspace(var.allowed_ssh_cidr))
-  effective_primary_region    = var.primary_azure_region
+  # Keep legacy azure_region in the input path for backward compatibility while
+  # preserving Task 3's primary/fallback region contract as the default source.
+  effective_primary_region = (
+    trimspace(var.primary_azure_region) != ""
+    ? var.primary_azure_region
+    : var.azure_region
+  )
   effective_fallback_region   = var.fallback_azure_region
   region_preference_order = [
     local.effective_primary_region,
