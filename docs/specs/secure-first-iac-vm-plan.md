@@ -196,11 +196,11 @@ Runbooks and end-to-end verification
 **Description:** Extend the Task 2 CI workflow to generate and upload a Terraform plan artifact for visibility before apply.
 
 **Acceptance criteria:**
-- [ ] Plan job runs after checks pass.
-- [ ] Plan output is uploaded as an artifact.
+- [x] Plan job runs after checks pass. - Verified in run `https://github.com/DNBLabs/First-IaC-Deployment/actions/runs/24953766387` (`static-checks` completed before `terraform-plan`, both succeeded).
+- [x] Plan output is uploaded as an artifact. - Verified artifact `terraform-plan` is present/downloadable in run `https://github.com/DNBLabs/First-IaC-Deployment/actions/runs/24953766387`.
 
 **Verification:**
-- [ ] Push (or open a PR) that touches `infra/` and confirm the artifact is downloadable from the workflow run
+- [x] Push (or open a PR) that touches `infra/` and confirm the artifact is downloadable from the workflow run - Confirmed on push of commit `b0e4c9a` with downloadable artifact from run `https://github.com/DNBLabs/First-IaC-Deployment/actions/runs/24953766387`.
 
 **Dependencies:** Tasks 2 and 7 (static checks from Task 2 plus full Terraform module through Task 7 so `terraform plan` is meaningful)
 

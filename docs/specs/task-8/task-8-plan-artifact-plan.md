@@ -122,14 +122,15 @@ Task 8.4 bookkeeping (Task 8 rows + checkpoint updates only)
 
 ## Task 8.4: Bookkeeping - Task 8 rows only
 **Description:** Update plan checkboxes and parent Task 8 acceptance/verification rows with concise evidence. Do not mark Task 9 rows.
+**Status:** [x] Completed — Updated this Task 8 plan and the parent plan’s Task 8 section with CI run/artifact evidence (`https://github.com/DNBLabs/First-IaC-Deployment/actions/runs/24953766387`) while leaving Task 9+ rows untouched.
 
 **Acceptance criteria:**
-- [ ] Task 8.1-8.3 checklists in this file are `[x]` with evidence.
-- [ ] Parent plan Task 8 acceptance criteria and verification rows are updated.
-- [ ] Task 9+ rows remain untouched.
+- [x] Task 8.1-8.3 checklists in this file are `[x]` with evidence.
+- [x] Parent plan Task 8 acceptance criteria and verification rows are updated.
+- [x] Task 9+ rows remain untouched.
 
 **Verification:**
-- [ ] Diff review confirms no edits under Task 9 sections.
+- [x] Diff review confirms no edits under Task 9 sections.
 
 **Dependencies:** Task 8.3
 
@@ -142,9 +143,9 @@ Task 8.4 bookkeeping (Task 8 rows + checkpoint updates only)
 ---
 
 ### Checkpoint: Task 8 complete
-- [ ] Task 8 acceptance criteria in parent plan are fully satisfied.
-- [ ] Artifact download verified at least once in CI run evidence.
-- [ ] No Task 9+ implementation started.
+- [x] Task 8 acceptance criteria in parent plan are fully satisfied.
+- [x] Artifact download verified at least once in CI run evidence.
+- [x] No Task 9+ implementation started.
 
 ## Risks and Mitigations
 
