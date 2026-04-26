@@ -93,3 +93,35 @@ jobs:
         with:
           terraform_version: "1.14.9"
           terraform_wrapper: false
+
+      - name: Terraform Init (providers only)
+        run: terraform -chdir=infra init -backend=false -input=false
+
+      - name: Validate plan input boundary (vm_admin_ssh_public_key)
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail() {
+            echo "$1" >&2
+            exit 1
+          }
+
+          [[ -n "${TF_VAR_vm_admin_ssh_public_key:-}" ]] || fail "Missing required TF_VAR_vm_admin_ssh_public_key for terraform plan."
+          [[ "$TF_VAR_vm_admin_ssh_public_key" != *"PRIVATE KEY"* ]] || fail "TF_VAR_vm_admin_ssh_public_key must be a public key, not private key material."
+          [[ "$TF_VAR_vm_admin_ssh_public_key" =~ ^(ssh-rsa|ssh-ed25519)[[:space:]][A-Za-z0-9+/]+={0,3}([[:space:]].+)?$ ]] || fail "TF_VAR_vm_admin_ssh_public_key must be a single-line OpenSSH public key (ssh-rsa or ssh-ed25519)."
+        env:
+          TF_VAR_vm_admin_ssh_public_key: ${{ vars.TF_VAR_VM_ADMIN_SSH_PUBLIC_KEY }}
+
+      - name: Terraform Plan (artifact text output)
+        run: terraform -chdir=infra plan -input=false -refresh=false -lock=false -no-color > task8-plan.txt
+        env:
+          TF_VAR_vm_admin_ssh_public_key: ${{ vars.TF_VAR_VM_ADMIN_SSH_PUBLIC_KEY }}
+
+      - name: Upload Terraform plan artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: terraform-plan
+          path: task8-plan.txt
+          if-no-files-found: error
+          retention-days: 14
+          include-hidden-files: false

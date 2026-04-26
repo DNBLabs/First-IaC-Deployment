@@ -63,33 +63,35 @@ Task 8.4 bookkeeping (Task 8 rows + checkpoint updates only)
 
 ## Task 8.2: Generate and upload Terraform plan artifact
 **Description:** Add the non-interactive plan command and artifact upload step with explicit path and retention settings.
+**Status:** [x] Completed — Added `terraform init` (providers-only) and non-interactive `terraform -chdir=infra plan ... > task8-plan.txt`, provisioned `TF_VAR_vm_admin_ssh_public_key` from repository variable `vars.TF_VAR_VM_ADMIN_SSH_PUBLIC_KEY`, added an explicit input-boundary validation gate for SSH public key shape/non-empty checks (simplified to a shared `fail()` helper), wired `actions/upload-artifact@v7` with explicit `name/path/if-no-files-found/retention-days/include-hidden-files:false`, and verified via Task 8.1+8.2 Pester/YAML validation.
 
 **Acceptance criteria:**
-- [ ] Plan step runs `terraform -chdir=infra plan -input=false -refresh=false -lock=false -no-color` and writes output to `task8-plan.txt`.
-- [ ] Artifact upload step uses `actions/upload-artifact` with:
-  - [ ] `name: terraform-plan`
-  - [ ] `path: task8-plan.txt`
-  - [ ] `if-no-files-found: error`
-  - [ ] `retention-days: 14`
-- [ ] Workflow includes required input provisioning for plan command (`TF_VAR_vm_admin_ssh_public_key`) without committed secrets.
-- [ ] No apply step or Task 9 workflow content is introduced.
+- [x] Plan step runs `terraform -chdir=infra plan -input=false -refresh=false -lock=false -no-color` and writes output to `task8-plan.txt`.
+- [x] Artifact upload step uses `actions/upload-artifact` with:
+  - [x] `name: terraform-plan`
+  - [x] `path: task8-plan.txt`
+  - [x] `if-no-files-found: error`
+  - [x] `retention-days: 14`
+- [x] Workflow includes required input provisioning for plan command (`TF_VAR_vm_admin_ssh_public_key`) without committed secrets.
+- [x] No apply step or Task 9 workflow content is introduced.
 
 **Verification:**
-- [ ] Workflow file diff contains only Task 8 job additions/related step wiring.
+- [x] Workflow file diff contains only Task 8 job additions/related step wiring.
 
 **Dependencies:** Task 8.1
 
 **Files likely touched:**
 - `.github/workflows/terraform-ci.yml`
+- `scripts/test-task8-2-plan-artifact-job-contract.tests.ps1`
 
 **Estimated scope:** S
 
 ---
 
 ### Checkpoint: Task 8 workflow config complete (After Tasks 8.1-8.2)
-- [ ] Workflow includes exactly one new plan-artifact job after `static-checks`.
-- [ ] Plan command is non-interactive and artifact upload is explicit-path only.
-- [ ] No Task 9+ workflow files were created/modified.
+- [x] Workflow includes exactly one new plan-artifact job after `static-checks`.
+- [x] Plan command is non-interactive and artifact upload is explicit-path only.
+- [x] No Task 9+ workflow files were created/modified.
 
 ---
 
