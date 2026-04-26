@@ -1,0 +1,31 @@
+# Task 9.1 skeleton: protected main apply workflow shell.
+# Workflow syntax (branches, permissions, jobs):
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+# Environments and deployment protection rules:
+# https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
+
+name: Terraform Apply
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: terraform-apply-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  terraform-apply:
+    name: terraform-apply
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Task 9.1 skeleton marker
+        run: echo "Task 9.1 workflow skeleton only; apply steps begin in Task 9.2."

@@ -37,21 +37,23 @@ Task 9.4 bookkeeping (Task 9 rows + checkpoints only)
 
 ## Task 9.1: Add protected apply workflow skeleton
 **Description:** Create `.github/workflows/terraform-apply.yml` with `main`-only trigger, apply job name, Ubuntu runner, protected environment, and least-privilege permissions.
+**Status:** [x] Completed — Hardened `.github/workflows/terraform-apply.yml` skeleton with `push` on `main`, `terraform-apply` job on `ubuntu-latest`, explicit `environment: production`, default-deny top-level `permissions: {}`, explicit job permissions (`contents: read`, `id-token: write`), job-level main-ref guard, non-overlapping apply `concurrency` guard, and a non-apply placeholder step; simplified Task 9.1 contract tests to a named-control map for clearer failure diagnostics while preserving assertions, then re-verified with passing Pester and YAML parse checks.
 
 **Acceptance criteria:**
-- [ ] New workflow file `.github/workflows/terraform-apply.yml` exists.
-- [ ] Workflow triggers only on `push` to `main`.
-- [ ] Apply job references `environment: production`.
-- [ ] Apply job permissions are explicit: `contents: read`, `id-token: write`.
+- [x] New workflow file `.github/workflows/terraform-apply.yml` exists.
+- [x] Workflow triggers only on `push` to `main`.
+- [x] Apply job references `environment: production`.
+- [x] Apply job permissions are explicit: `contents: read`, `id-token: write`.
 
 **Verification:**
-- [ ] Workflow YAML parses cleanly.
-- [ ] Diff review confirms no Task 8 workflow behavior changes beyond compatibility-safe references.
+- [x] Workflow YAML parses cleanly.
+- [x] Diff review confirms no Task 8 workflow behavior changes beyond compatibility-safe references.
 
 **Dependencies:** None
 
 **Files likely touched:**
 - `.github/workflows/terraform-apply.yml`
+- `scripts/test-task9-1-apply-workflow-skeleton-contract.tests.ps1`
 
 **Estimated scope:** XS
 
