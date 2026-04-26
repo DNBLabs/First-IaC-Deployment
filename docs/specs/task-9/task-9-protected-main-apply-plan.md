@@ -61,26 +61,27 @@ Task 9.4 bookkeeping (Task 9 rows + checkpoints only)
 
 ## Task 9.2: Add OIDC auth and Terraform apply steps
 **Description:** Add checkout, Azure OIDC login, Terraform init, and Terraform apply steps to the apply job using existing Azure secrets and non-interactive flags.
+**Status:** [x] Completed — Updated `.github/workflows/terraform-apply.yml` to include `actions/checkout@v4` (`persist-credentials: false`), fail-fast Azure OIDC input boundary validation for `AZURE_CLIENT_ID`/`AZURE_TENANT_ID`/`AZURE_SUBSCRIPTION_ID`, `azure/login@v3` with `allow-no-subscriptions: false`, `hashicorp/setup-terraform@v4`, and non-interactive `terraform -chdir=infra init/apply` steps (`-input=false`, `-auto-approve`, `-no-color`), plus `AZURE_CORE_OUTPUT: none` and `TF_IN_AUTOMATION: true`; simplified the Task 9.2 contract test by extracting named secret-message constants and a reusable assertion helper while preserving all checks, then re-verified with passing Task 9.2 and Task 9.1 Pester tests plus YAML parse.
 
 **Acceptance criteria:**
-- [ ] Workflow uses `azure/login@v3` with:
-  - [ ] `client-id: ${{ secrets.AZURE_CLIENT_ID }}`
-  - [ ] `tenant-id: ${{ secrets.AZURE_TENANT_ID }}`
-  - [ ] `subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}`
-  - [ ] `allow-no-subscriptions: false`
-- [ ] Workflow includes Terraform init/apply commands scoped to `infra/`.
-- [ ] Apply command is non-interactive (`-auto-approve -input=false -no-color`).
-- [ ] No client secret credentials are added to repository/workflow.
+- [x] Workflow uses `azure/login@v3` with:
+  - [x] `client-id: ${{ secrets.AZURE_CLIENT_ID }}`
+  - [x] `tenant-id: ${{ secrets.AZURE_TENANT_ID }}`
+  - [x] `subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}`
+  - [x] `allow-no-subscriptions: false`
+- [x] Workflow includes Terraform init/apply commands scoped to `infra/`.
+- [x] Apply command is non-interactive (`-auto-approve -input=false -no-color`).
+- [x] No client secret credentials are added to repository/workflow.
 
 **Verification:**
-- [ ] Contract check (or YAML review) confirms OIDC + apply command wiring.
-- [ ] Workflow YAML parses after step additions.
+- [x] YAML review confirms OIDC + apply command wiring.
+- [x] Workflow YAML parses after step additions.
 
 **Dependencies:** Task 9.1
 
 **Files likely touched:**
 - `.github/workflows/terraform-apply.yml`
-- `scripts/test-task9-apply-workflow-contract.tests.ps1` (if contract test is added)
+- `scripts/test-task9-2-apply-workflow-contract.tests.ps1`
 
 **Estimated scope:** S
 
