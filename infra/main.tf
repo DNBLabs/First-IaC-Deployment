@@ -12,7 +12,7 @@ locals {
     ? var.primary_azure_region
     : var.azure_region
   )
-  effective_fallback_region   = var.fallback_azure_region
+  effective_fallback_region = var.fallback_azure_region
   region_preference_order = [
     local.effective_primary_region,
     local.effective_fallback_region
