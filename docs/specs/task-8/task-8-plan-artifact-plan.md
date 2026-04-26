@@ -99,16 +99,17 @@ Task 8.4 bookkeeping (Task 8 rows + checkpoint updates only)
 
 ## Task 8.3: Verify CI run and artifact availability
 **Description:** Trigger a workflow run by pushing a branch change that touches `infra/` or `terraform-ci.yml`, then confirm the new job runs and the plan artifact is downloadable.
+**Status:** [x] Completed — Updated workflow with Azure OIDC login, pushed `main`, and verified successful run `https://github.com/DNBLabs/First-IaC-Deployment/actions/runs/24953766387` where `static-checks` and `terraform-plan` both passed; downloaded `terraform-plan` artifact (`task8-plan.txt`) and confirmed expected Task 7 baseline headings (budget/shutdown resources) plus plan summary; added Task 8.3 OIDC contract coverage with RED→GREEN proof (`allow-no-subscriptions: false` explicitly enforced), then hardened OIDC wiring by moving to `azure/login@v3` and setting `AZURE_CORE_OUTPUT: none`; review fix tightened the 8.3 contract to explicitly require `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SUBSCRIPTION_ID` secret wiring.
 
 **Acceptance criteria:**
-- [ ] GitHub Actions run shows `static-checks` succeeded.
-- [ ] New plan job runs after `static-checks` and succeeds.
-- [ ] Run summary includes downloadable artifact named `terraform-plan`.
-- [ ] Downloaded artifact contains Terraform plan text with expected headings (e.g., budget/shutdown resources from Task 7 baseline).
+- [x] GitHub Actions run shows `static-checks` succeeded.
+- [x] New plan job runs after `static-checks` and succeeds.
+- [x] Run summary includes downloadable artifact named `terraform-plan`.
+- [x] Downloaded artifact contains Terraform plan text with expected headings (e.g., budget/shutdown resources from Task 7 baseline).
 
 **Verification:**
-- [ ] Push branch and capture run URL.
-- [ ] Manual check artifact appears and can be downloaded.
+- [x] Push branch and capture run URL.
+- [x] Manual check artifact appears and can be downloaded.
 
 **Dependencies:** Task 8.2
 
