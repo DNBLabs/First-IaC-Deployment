@@ -12,7 +12,7 @@ resource "azurerm_linux_virtual_machine" "workload" {
   name                = "${local.deployment_name_prefix}-vm"
   resource_group_name = azurerm_resource_group.core.name
   location            = azurerm_resource_group.core.location
-  size                = "Standard_B1s"
+  size                = var.vm_size
   admin_username      = "install"
 
   disable_password_authentication = true

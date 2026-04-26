@@ -34,8 +34,8 @@ output "deployment_name_prefix" {
 }
 
 output "azure_region" {
-  description = "Primary Azure region input; the provider will target this in tasks that add regional resources."
-  value       = var.azure_region
+  description = "Effective primary Azure region used by resources in this root module."
+  value       = local.effective_primary_region
 }
 
 output "task3_input_contract_preview" {

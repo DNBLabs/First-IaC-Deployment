@@ -128,6 +128,22 @@ variable "vm_admin_ssh_public_key" {
   }
 }
 
+variable "vm_size" {
+  description = "Azure VM size for the workload Linux VM. Keep a low-cost baseline by default and override when regional capacity is constrained."
+  type        = string
+  default     = "Standard_B1s"
+
+  validation {
+    condition = (
+      trimspace(var.vm_size) != "" &&
+      var.vm_size == trimspace(var.vm_size) &&
+      !can(regex("[\r\n\t]", var.vm_size)) &&
+      length(var.vm_size) <= 64
+    )
+    error_message = "vm_size must be a non-empty trimmed VM SKU string (for example Standard_B1s) with no tabs/newlines and at most 64 characters."
+  }
+}
+
 # Task 6.1: Azure VM auto-shutdown time zone ID (azurerm_dev_test_global_vm_shutdown_schedule.timezone).
 # Input variable assignment: https://developer.hashicorp.com/terraform/language/values/variables
 # Provider timezone argument references Microsoft-supported display names:

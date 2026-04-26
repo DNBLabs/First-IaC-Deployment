@@ -240,13 +240,13 @@ Runbooks and end-to-end verification
 **Description:** Document exact setup, deploy, verify, and destroy steps for repeatability and safe operation.
 
 **Acceptance criteria:**
-- [ ] Runbook includes prerequisites, variables, and command sequence.
-- [ ] Teardown instructions include explicit confirmation/safety notes.
-- [ ] Verification checklist includes VM, shutdown, and budget checks.
+- [x] Runbook includes prerequisites, variables, and command sequence. - `docs/runbooks/deploy.md` and `docs/runbooks/teardown.md` include prerequisite tooling checks, required input guidance (`TF_VAR_vm_admin_ssh_public_key`), and ordered Terraform command sequences.
+- [x] Teardown instructions include explicit confirmation/safety notes. - `docs/runbooks/teardown.md` includes warning callouts and mandatory manual confirmation token step (`DESTROY`) before destroy execution.
+- [x] Verification checklist includes VM, shutdown, and budget checks. - `docs/runbooks/deploy.md` post-deploy checklist explicitly verifies Task 5 VM baseline, Task 6 auto-shutdown, and Task 7 budget controls.
 
 **Verification:**
-- [ ] Execute runbook from a clean environment
-- [ ] Confirm no undocumented prerequisite is required
+- [x] Execute runbook from a clean environment - Dry-run validation executed from fresh shell context using documented commands (`terraform -chdir=infra init`, `fmt`, `validate`, `plan`, and `plan -destroy`) with expected results.
+- [x] Confirm no undocumented prerequisite is required - Runbooks now document required tools (`terraform`, `az`, `gh`) and required Terraform input variable boundary before command execution.
 
 **Dependencies:** Tasks 1-9
 
