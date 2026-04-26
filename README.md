@@ -2,10 +2,10 @@
 
 # Enterprise Secure-First Azure IaC Platform
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)](https://github.com/YOUR_ORG/YOUR_REPO/actions)
-[![Security Scan](https://img.shields.io/badge/security_scan-passing-brightgreen?style=for-the-badge)](https://github.com/YOUR_ORG/YOUR_REPO/security)
-[![Terraform CI](https://img.shields.io/badge/terraform-ci-blue?style=for-the-badge)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/terraform-ci.yml)
-[![Terraform Apply](https://img.shields.io/badge/terraform-apply-blue?style=for-the-badge)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/terraform-apply.yml)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge)](https://github.com/DNBLabs/First-IaC-Deployment/actions)
+[![Security Scan](https://img.shields.io/badge/security_scan-passing-brightgreen?style=for-the-badge)](https://github.com/DNBLabs/First-IaC-Deployment/security)
+[![Terraform CI](https://img.shields.io/badge/terraform-ci-blue?style=for-the-badge)](https://github.com/DNBLabs/First-IaC-Deployment/actions/workflows/terraform-ci.yml)
+[![Terraform Apply](https://img.shields.io/badge/terraform-apply-blue?style=for-the-badge)](https://github.com/DNBLabs/First-IaC-Deployment/actions/workflows/terraform-apply.yml)
 
 ## Executive Summary (The Business Value)
 
@@ -97,8 +97,8 @@ Use the [Azure Pricing Calculator](https://azure.microsoft.com/pricing/calculato
 1. Clone the repository.
 
    ```bash
-   git clone https://github.com/YOUR_ORG/YOUR_REPO.git
-   cd YOUR_REPO
+   git clone https://github.com/DNBLabs/First-IaC-Deployment.git
+   cd First-IaC-Deployment
    ```
 
 2. Ensure prerequisites are installed and authenticated.
